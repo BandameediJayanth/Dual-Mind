@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dual Mind - Browser-Based Multiplayer Game Suite with ML-Driven Performance Monitoring">
+    <title>Dual Mind - ML-Driven Performance Monitoring</title>
+    <link rel="icon" type="image/png" href="src/assets/images/logo.png">
+    <link rel="apple-touch-icon" href="src/assets/images/logo.png">
+    <link rel="stylesheet" href="src/css/main.css">
+    <link rel="stylesheet" href="src/css/components.css">
+    <link rel="stylesheet" href="src/css/games.css">
+    <link rel="stylesheet" href="src/css/dashboard.css">
+</head>
+<body>
+    <!-- Main Application Container -->
+    <div id="app" class="app-container">
+        
+        <!-- Header Section -->
+        <header class="header" role="banner">
+            <div class="header__logo">
+                <img src="src/assets/images/logo.png" alt="Dual Mind Logo" class="header__logo-img" width="40" height="40">
+                <div class="header__titles">
+                    <h1 class="header__title">Dual Mind</h1>
+                    <span class="header__subtitle">ML-Driven Performance Monitoring</span>
+                </div>
+            </div>
+            <nav class="header__nav" role="navigation" aria-label="Main navigation">
+                <button class="nav-btn" data-view="home" aria-label="Home">
+                    <span class="nav-btn__icon">🏠</span>
+                    <span class="nav-btn__text">Home</span>
+                </button>
+                <button class="nav-btn" data-view="games" aria-label="Games">
+                    <span class="nav-btn__icon">🎮</span>
+                    <span class="nav-btn__text">Games</span>
+                </button>
+                <button class="nav-btn" data-view="analytics" aria-label="Analytics">
+                    <span class="nav-btn__icon">📊</span>
+                    <span class="nav-btn__text">Analytics</span>
+                </button>
+                <button class="nav-btn" data-view="settings" aria-label="Settings">
+                    <span class="nav-btn__icon">⚙️</span>
+                    <span class="nav-btn__text">Settings</span>
+                </button>
+            </nav>
+            <div class="header__session" id="session-info">
+                <span class="session-status">Offline</span>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content" role="main">
+            
+            <!-- Home View -->
+            <section id="view-home" class="view view--active">
+                <div class="welcome-section">
+                    <h2>Welcome to Game Suite</h2>
+                    <p>A browser-based multiplayer platform featuring 10 classic games with intelligent performance analytics.</p>
+                    <button class="btn btn--primary btn--large" data-action="start-playing">
+                        Start Playing
+                    </button>
+                </div>
+                <div class="quick-stats" id="quick-stats">
+                    <div class="stat-card">
+                        <span class="stat-card__value" id="stat-games-played">0</span>
+                        <span class="stat-card__label">Games Played</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-card__value" id="stat-performance-index">--</span>
+                        <span class="stat-card__label">Performance Index</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-card__value" id="stat-skill-tier">Novice</span>
+                        <span class="stat-card__label">Skill Tier</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Games Selection View -->
+            <section id="view-games" class="view">
+                <h2 class="view__title">Select a Game</h2>
+                <div class="game-grid" id="game-grid">
+                    <!-- Game cards will be dynamically inserted -->
+                </div>
+            </section>
+
+            <!-- Game Play View -->
+            <section id="view-gameplay" class="view">
+                <div class="game-header">
+                    <h2 class="game-header__title" id="current-game-title">Game</h2>
+                    <div class="game-header__info">
+                        <span class="turn-indicator" id="turn-indicator">Your Turn</span>
+                    </div>
+                </div>
+                <div class="game-layout">
+                    <!-- Side Panel - Player 1 -->
+                    <aside class="player-panel player-panel--left">
+                        <div class="player-card" id="player1-card">
+                            <div class="player-card__avatar">P1</div>
+                            <div class="player-card__name">Player 1</div>
+                            <div class="player-card__score">0</div>
+                        </div>
+                    </aside>
+                    
+                    <!-- Center - Game Board -->
+                    <div class="game-board-container">
+                        <canvas id="game-canvas" class="game-canvas" width="600" height="600"></canvas>
+                        <div id="game-board" class="game-board">
+                            <!-- DOM-based game boards will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Side Panel - Player 2 -->
+                    <aside class="player-panel player-panel--right">
+                        <div class="player-card" id="player2-card">
+                            <div class="player-card__avatar">P2</div>
+                            <div class="player-card__name">Player 2</div>
+                            <div class="player-card__score">0</div>
+                        </div>
+                    </aside>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn--secondary" id="btn-restart" aria-label="Restart Game">
+                        🔄 Restart
+                    </button>
+                    <button class="btn btn--secondary" id="btn-quit" aria-label="Quit Game">
+                        ✖ Quit
+                    </button>
+                </div>
+            </section>
+
+            <!-- Analytics View -->
+            <section id="view-analytics" class="view">
+                <h2 class="view__title">Performance Analytics</h2>
+                <div class="analytics-dashboard">
+                    <div class="analytics-card analytics-card--large">
+                        <h3>Performance Index</h3>
+                        <div class="performance-display" id="performance-display">
+                            <span class="performance-value">--</span>
+                            <span class="performance-label">Non-Clinical Score</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-bar__fill" id="confidence-fill"></div>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Skill Tier</h3>
+                        <div class="tier-display" id="tier-display">
+                            <span class="tier-badge tier-badge--novice">Novice</span>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Trend Analysis</h3>
+                        <canvas id="trend-chart" class="trend-chart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Feature Importance</h3>
+                        <div class="feature-list" id="feature-importance">
+                            <!-- Feature importance bars will be inserted -->
+                        </div>
+                    </div>
+                    <div class="analytics-card analytics-card--full">
+                        <h3>Session History</h3>
+                        <div class="session-history" id="session-history">
+                            <!-- Session cards will be inserted -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section id="view-settings" class="view">
+                <h2 class="view__title">Settings</h2>
+                <div class="settings-panel">
+                    <div class="settings-group">
+                        <h3>Display</h3>
+                        <label class="setting-item">
+                            <span>Dark Mode</span>
+                            <input type="checkbox" id="setting-dark-mode" class="toggle">
+                        </label>
+                        <label class="setting-item">
+                            <span>Animations</span>
+                            <input type="checkbox" id="setting-animations" class="toggle" checked>
+                        </label>
+                        <label class="setting-item">
+                            <span>Sound Effects</span>
+                            <input type="checkbox" id="setting-sound" class="toggle" checked>
+                        </label>
+                    </div>
+                    <div class="settings-group">
+                        <h3>Accessibility</h3>
+                        <label class="setting-item">
+                            <span>High Contrast</span>
+                            <input type="checkbox" id="setting-contrast" class="toggle">
+                        </label>
+                        <label class="setting-item">
+                            <span>Large Text</span>
+                            <input type="checkbox" id="setting-large-text" class="toggle">
+                        </label>
+                    </div>
+                    <div class="settings-group">
+                        <h3>Analytics & Privacy</h3>
+                        <label class="setting-item">
+                            <span>Enable IQ Monitoring</span>
+                            <input type="checkbox" id="setting-iq-monitoring" class="toggle" checked>
+                        </label>
+                        <label class="setting-item">
+                            <span>Store Session Data</span>
+                            <input type="checkbox" id="setting-store-data" class="toggle" checked>
+                        </label>
+                        <button class="btn btn--danger" id="btn-clear-data">
+                            Clear All Data
+                        </button>
+                    </div>
+                    <div class="settings-group">
+                        <h3>Data Management</h3>
+                        <button class="btn btn--secondary" id="btn-export-data">
+                            Export Data
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer" role="contentinfo">
+            <div class="footer__content">
+                <span>Game Suite v1.0</span>
+                <span class="footer__separator">|</span>
+                <span>ML-Driven IQ Monitoring</span>
+            </div>
+        </footer>
+
+        <!-- Modal Container -->
+        <div id="modal-container" class="modal-container" aria-hidden="true">
+            <div class="modal-overlay"></div>
+            <div class="modal" role="dialog" aria-modal="true">
+                <div class="modal__header">
+                    <h3 class="modal__title" id="modal-title">Modal Title</h3>
+                    <button class="modal__close" aria-label="Close modal">&times;</button>
+                </div>
+                <div class="modal__body" id="modal-body">
+                    <!-- Modal content will be inserted dynamically -->
+                </div>
+                <div class="modal__footer" id="modal-footer">
+                    <!-- Modal actions will be inserted dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="toast-container" aria-live="polite">
+            <!-- Toast notifications will be inserted dynamically -->
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay" aria-hidden="true">
+            <div class="loading-spinner"></div>
+            <span class="loading-text">Loading...</span>
+        </div>
+
+    </div>
+
+    <!-- Application Scripts -->
+    <script type="module" src="src/js/main.js"></script>
+</body>
+</html>

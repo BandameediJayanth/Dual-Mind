@@ -1,0 +1,223 @@
+Technology Stack Document
+Unified Browser-Based Multiplayer Game Suite with ML-Driven IQ Monitoring
+________________________________________
+1. Purpose
+This document defines the complete technology stack used to build the Unified Multiplayer Game Suite with Machine Learning–based IQ Monitoring. It explains what technologies are used, why they are chosen, and how they align with academic requirements, system design, and scalability goals.
+This document is intended for:
+•	Academic submission and viva
+•	Developer onboarding
+•	Architecture and technology justification
+________________________________________
+2. Guiding Principles for Tech Selection
+•	Browser-first accessibility
+•	Deterministic and testable core logic
+•	Explainable and ethical ML usage
+•	Minimal but powerful toolchain
+•	Clear separation of training and inference
+•	Easy extensibility
+________________________________________
+3. High-Level Technology Overview
+Layer	Technology
+Frontend UI	HTML5, CSS3
+Core Game Logic	JavaScript (ES6+)
+Rendering	Canvas API / WebGL
+Architecture	Event-driven, FSM-based
+ML Training	Python
+ML Models	Random Forest, XGBoost
+ML Inference	JavaScript / Python API
+Analytics	Custom Feature Pipeline
+Storage	LocalStorage, IndexedDB
+Testing	Jest, Deterministic Replays
+Version Control	Git
+________________________________________
+4. Frontend Technology Stack
+4.1 HTML5
+Usage
+•	Game boards and layouts
+•	Semantic UI structure
+•	Accessibility support
+Justification
+•	Native browser support
+•	Lightweight and framework-independent
+•	Academic clarity
+________________________________________
+4.2 CSS3
+Usage
+•	Responsive layouts
+•	Minimalist theming
+•	Accessibility features
+Key Techniques
+•	Flexbox / Grid
+•	CSS variables
+•	Media queries
+•	Lightweight transitions
+Justification
+•	Clean separation of concerns
+•	GPU-friendly animations
+________________________________________
+4.3 JavaScript (ES6+)
+Usage
+•	Game engine implementation
+•	State machines
+•	Input handling
+•	Event bus
+•	Client-side ML inference (optional)
+Justification
+•	Native to browsers
+•	Excellent event handling
+•	Deterministic simulation support
+________________________________________
+5. Core Architecture Stack
+5.1 Architectural Patterns
+•	Finite State Machines (FSM)
+•	Event-driven architecture
+•	Logical MVC separation
+Benefits
+•	Predictable behavior
+•	Reproducible testing
+•	Clean modularity
+________________________________________
+6. Rendering & Animation Stack
+6.1 Canvas API
+Usage
+•	Drawing game boards
+•	Move animations
+•	Visual feedback
+Why Canvas
+•	Better performance than DOM-heavy UIs
+•	Fine-grained rendering control
+________________________________________
+6.2 WebGL (Optional)
+Usage
+•	GPU-accelerated transitions
+•	Smooth animations
+Why WebGL
+•	High performance
+•	Future scalability
+________________________________________
+7. Machine Learning Stack
+7.1 ML Model Training (Offline)
+Technologies
+•	Python
+•	NumPy
+•	Pandas
+•	scikit-learn (Random Forest)
+•	XGBoost library
+Purpose
+•	Train supervised models on gameplay features
+•	Evaluate accuracy and stability
+________________________________________
+7.2 ML Models Used
+Random Forest
+•	High interpretability
+•	Robust to noise
+•	Suitable for small-to-medium datasets
+XGBoost
+•	Higher predictive accuracy
+•	Handles non-linear feature interactions
+•	Efficient gradient boosting
+Model Selection Strategy
+•	Random Forest for explainability
+•	XGBoost for performance comparison
+________________________________________
+7.3 Feature Engineering Stack
+Features Generated
+•	Decision latency
+•	Accuracy ratio
+•	Pattern success rate
+•	Memory recall score
+•	Error repetition frequency
+Implementation
+•	Custom feature extraction pipeline
+•	Normalization and scaling
+________________________________________
+7.4 ML Inference Layer
+Option A: Client-Side Inference (Preferred for Academics)
+•	JavaScript-based inference
+•	Pre-trained model exported to JSON / ONNX
+•	Offline and privacy-friendly
+Option B: Server-Side Inference (Scalable)
+•	Python-based REST API
+•	Centralized model updates
+•	Suitable for real-time multiplayer
+Design Rule
+ML inference influences difficulty and analytics only, never game rules.
+________________________________________
+8. IQ Monitoring & Analytics Stack
+8.1 Data Capture
+Captured Data
+•	Input timestamps
+•	Move validity
+•	Game outcomes
+•	Session duration
+________________________________________
+8.2 Analytics Processing
+Implementation
+•	Custom JavaScript analytics engine
+•	Rolling averages and trend analysis
+•	Feature vector generation for ML
+Justification
+•	Full transparency
+•	No black-box analytics
+________________________________________
+9. Persistence & Storage Stack
+9.1 LocalStorage
+Usage
+•	User preferences
+•	Lightweight analytics
+________________________________________
+9.2 IndexedDB
+Usage
+•	Session history
+•	IQ trends
+•	Feature datasets
+Justification
+•	Structured storage
+•	Offline support
+________________________________________
+10. Testing & Validation Stack
+10.1 Game Logic Testing
+•	Deterministic state replay
+•	Rule-based unit tests
+10.2 ML Model Validation
+•	Train/test split evaluation
+•	Cross-validation
+•	Stability testing across sessions
+________________________________________
+11. Development & Collaboration Tools
+•	Git (version control)
+•	GitHub / GitLab
+•	VS Code
+•	Browser DevTools
+•	Jupyter Notebook (ML experiments)
+________________________________________
+12. Security & Ethics Stack
+•	Input sanitization
+•	Session isolation
+•	Opt-in analytics
+•	Explainable ML predictions
+________________________________________
+13. Scalability & Future Extensions
+Phase 2
+•	Node.js backend
+•	WebSockets for real-time play
+•	Redis for session state
+Phase 3
+•	Advanced ML models
+•	Skill clustering
+•	Cross-platform PWA
+________________________________________
+14. Constraints & Trade-offs
+Constraint	Decision
+Ethics	No deep black-box models
+Dataset size	Tree-based ML
+Performance	Offline inference
+Academic clarity	Explainable ML
+________________________________________
+15. Conclusion
+This ML-enabled technology stack balances academic rigor, system performance, explainability, and scalability. It supports intelligent analytics without compromising deterministic gameplay or ethical boundaries.
+________________________________________
+Document Version: 2.0
+Status: ML-Integrated Technology Stack
+Prepared For: Academic & Developer Review
+

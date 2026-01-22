@@ -1,0 +1,151 @@
+Product Requirements Document (PRD)
+Unified Browser-Based Multiplayer Game Suite with ML-Driven IQ Monitoring
+________________________________________
+1. Purpose
+This Product Requirements Document defines the vision, scope, features, and requirements of the Unified Multiplayer Game Suite enhanced with a Machine Learning–based IQ Monitoring System. The PRD is designed to support:
+•	Academic submission and evaluation
+•	Clear alignment between product goals and technical design
+•	Developer understanding of system expectations
+The system emphasizes ethical intelligence analytics, deterministic gameplay, and adaptive user experience.
+________________________________________
+2. Product Vision
+To build a browser-based multiplayer gaming platform that combines classic turn-based games with explainable machine learning analytics to evaluate and enhance player cognitive performance in a non-clinical, transparent, and ethical manner.
+________________________________________
+3. Objectives
+•	Provide a unified platform for multiple classic games
+•	Maintain consistent UI and gameplay mechanics across games
+•	Capture gameplay behavior as structured data
+•	Apply ML models to analyze player performance
+•	Enable adaptive difficulty and skill-based matchmaking
+•	Ensure ethical use of analytics with user control
+________________________________________
+4. In-Scope Games (Core – ML Enabled)
+The following games form the MVP and are fully integrated with the IQ Monitoring and ML system:
+1.	Tic Tac Toe
+2.	Checkers
+3.	Four in a Row
+4.	Dots & Boxes
+5.	Memory Match
+6.	Word Chain
+7.	24 Game
+8.	Mini Sudoku
+9.	Ludo
+10.	Reversi (Othello)
+Each game contributes measurable cognitive signals suitable for machine learning.
+________________________________________
+5. Target Users
+•	Casual and competitive gamers
+•	Students and academic evaluators
+•	Cognitive skill training users
+•	Developers and researchers
+________________________________________
+6. Key Features
+6.1 Core Platform Features
+•	Browser-based access (no installation)
+•	Modular game architecture
+•	Centralized game controller
+•	Deterministic rule enforcement
+•	Unified input and event handling
+________________________________________
+6.2 Multiplayer & Gameplay
+•	Two-player, turn-based gameplay
+•	Session-based matchmaking
+•	Move validation and turn sequencing
+•	Replayable deterministic sessions
+________________________________________
+6.3 IQ Monitoring & Machine Learning Layer
+Data Collection
+•	Decision latency
+•	Move accuracy
+•	Pattern success rate
+•	Memory recall accuracy
+•	Error repetition frequency
+•	Strategic consistency
+Machine Learning Integration
+•	Supervised learning models
+•	Supported models:
+o	Random Forest
+o	XGBoost
+•	Feature-based performance prediction
+•	Skill tier classification
+•	Improvement and anomaly detection
+Outputs
+•	IQ-like Performance Index (non-clinical)
+•	Skill tier label with confidence score
+•	Trend analysis over sessions
+________________________________________
+6.4 Adaptive Gameplay Features
+•	ML-driven difficulty scaling
+•	Skill-balanced matchmaking
+•	Adaptive challenges
+•	Optional IQ Duel Mode
+________________________________________
+7. Functional Requirements
+Gameplay Engine
+•	Deterministic state machines per game
+•	Central turn controller
+•	Rule abstraction layer
+•	Valid action enforcement
+ML & Analytics
+•	Feature extraction pipeline
+•	Model inference engine
+•	Explainable predictions
+•	Separation of ML decisions from game rules
+User Interface
+•	Responsive design
+•	Accessibility support
+•	Performance and analytics dashboards
+________________________________________
+8. Non-Functional Requirements
+Performance
+•	Low-latency input handling
+•	GPU-accelerated animations
+•	Efficient state updates
+Reliability
+•	Deterministic replay
+•	Reproducible ML inference
+Ethics & Compliance
+•	Non-clinical framing of IQ
+•	Opt-in data storage
+•	Transparent scoring explanation
+•	No biometric or personal profiling
+________________________________________
+9. Data Requirements
+•	Gameplay event logs
+•	Feature vectors per session
+•	ML prediction outputs
+•	User-controlled persistence
+________________________________________
+10. Success Metrics
+Product Metrics
+•	Session completion rate
+•	Player retention
+•	Engagement duration
+ML Metrics
+•	Skill prediction accuracy
+•	Stability of predictions
+•	Player improvement trends
+________________________________________
+11. Risks & Mitigation
+Risk	Mitigation
+IQ misinterpretation	Clear non-clinical labeling
+Model bias	Feature normalization & review
+Over-adaptation	Caps on difficulty changes
+Data misuse	Local-first storage & consent
+________________________________________
+12. Future Scope
+•	Real-time multiplayer
+•	AI opponents using ML/RL
+•	Advanced skill clustering
+•	Cross-platform deployment
+________________________________________
+13. Assumptions & Constraints
+•	Internet browser availability
+•	Limited dataset size initially
+•	ML used only for analytics and adaptation
+________________________________________
+14. Approval & Versioning
+Document Version: 2.0
+Status: ML-Integrated PRD
+Prepared For: Academic & Developer Review
+

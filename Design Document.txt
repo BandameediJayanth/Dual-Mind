@@ -1,0 +1,179 @@
+Design Document
+Unified Browser-Based Multiplayer Game Suite with ML-Driven IQ Monitoring
+________________________________________
+1. Introduction
+1.1 Purpose
+This document describes the software design of the Unified Multiplayer Game Suite enhanced with Machine Learning–based IQ Monitoring. It bridges the gap between the PRD and implementation and is intended for:
+•	Academic submission and evaluation
+•	Developer collaboration and system understanding
+The design follows a minimalist, modular, and ethical-first approach.
+________________________________________
+2. Design Goals
+•	Deterministic and testable gameplay logic
+•	Clear separation between gameplay and ML analytics
+•	Explainable and ethical ML integration
+•	High performance and low latency
+•	Easy extensibility for new games and models
+________________________________________
+3. System Overview
+The platform is a browser-based, turn-based multiplayer system hosting 10 classic games. A shared deterministic engine powers all games, while a separate ML-assisted analytics layer evaluates player performance and drives adaptive behavior.
+________________________________________
+4. High-Level Architecture
+4.1 Architectural Style
+•	Event-driven
+•	Layered architecture
+•	Deterministic core with ML-assisted meta layer
+4.2 Architecture Layers
+1.	Presentation (UI) Layer
+2.	Input Handling Layer
+3.	Central Controller Layer
+4.	Deterministic Game Engine Layer
+5.	Feature Extraction Layer
+6.	ML Inference Layer
+7.	IQ Scoring & Adaptation Layer
+8.	Persistence Layer
+________________________________________
+5. Component Design
+5.1 UI Layer
+Responsibilities
+•	Render game boards and controls
+•	Display turn indicators and results
+•	Visualize IQ trends and skill tiers
+Design Characteristics
+•	Responsive and minimalist
+•	Consistent layout across games
+•	Accessibility-first (contrast, scaling)
+________________________________________
+5.2 Input Handler
+Responsibilities
+•	Capture mouse, touch, and keyboard input
+•	Normalize actions into game events
+•	Prevent invalid UI-level actions
+________________________________________
+5.3 Central Game Controller
+Responsibilities
+•	Manage game sessions
+•	Enforce turn order
+•	Coordinate engine, UI, and analytics
+•	Handle matchmaking and session lifecycle
+________________________________________
+5.4 Deterministic Game Engine
+Responsibilities
+•	Maintain game state
+•	Validate moves
+•	Apply game rules
+•	Detect terminal conditions
+Design Rule
+Game outcomes must be independent of ML predictions.
+________________________________________
+5.5 State Machine Manager
+Responsibilities
+•	Track current and previous states
+•	Enable replay and debugging
+•	Support deterministic testing
+________________________________________
+5.6 Feature Extraction Layer
+Responsibilities
+•	Convert raw gameplay events into structured feature vectors
+Example Features
+•	Average decision latency
+•	Move accuracy ratio
+•	Pattern success rate
+•	Memory recall score
+•	Error repetition frequency
+________________________________________
+5.7 ML Inference Engine
+Responsibilities
+•	Load trained ML models
+•	Run inference on feature vectors
+•	Predict skill tier and confidence
+Supported Models
+•	Random Forest
+•	XGBoost
+Design Rule
+ML operates only at the analytics and adaptation level.
+________________________________________
+5.8 IQ Scoring & Adaptation Engine
+Responsibilities
+•	Compute non-clinical Performance Index
+•	Apply difficulty scaling
+•	Enable IQ Duel Mode
+________________________________________
+5.9 Persistence Layer
+Responsibilities
+•	Store session history
+•	Persist IQ trends and preferences
+Storage Options
+•	LocalStorage / IndexedDB
+•	Optional cloud sync
+________________________________________
+6. Data Flow Design
+1.	User performs action
+2.	Input Handler normalizes event
+3.	Controller validates turn
+4.	Game Engine applies move
+5.	State updated and broadcast
+6.	Feature extraction triggered
+7.	ML inference executed
+8.	IQ score updated
+9.	Adaptive response applied
+10.	Data persisted (optional)
+________________________________________
+7. Game-Specific Design Considerations
+Strategy Games
+(Tic Tac Toe, Checkers, Reversi, Four in a Row)
+•	Focus on optimal move detection
+•	Strategic depth features
+Memory Games
+(Memory Match)
+•	Recall accuracy
+•	Error repetition tracking
+Logic & Math Games
+(24 Game, Mini Sudoku)
+•	Computation speed
+•	Rule consistency
+Chance-Based Games
+(Ludo)
+•	Risk handling
+•	Adaptability to randomness
+________________________________________
+8. UI / UX Design Principles
+•	Minimalist layout
+•	Clear visual hierarchy
+•	Immediate feedback
+•	Consistent interaction patterns
+Textual Wireframe Structure
+Game Screen
+•	Header: Game name, session info
+•	Center: Game board
+•	Side panel: Player status
+•	Footer: Controls & settings
+________________________________________
+9. Ethics & Explainability
+•	IQ presented as "Performance Index"
+•	Feature importance available
+•	No personal or biometric data
+•	User-controlled analytics storage
+________________________________________
+10. Scalability & Extensibility
+•	Plug-and-play game modules
+•	Model-agnostic ML layer
+•	Event-based communication
+•	Future real-time multiplayer readiness
+________________________________________
+11. Testing Strategy
+•	Deterministic replay testing
+•	Unit tests for game rules
+•	ML validation using fixed datasets
+________________________________________
+12. Design Constraints
+•	Browser performance limits
+•	Small initial ML dataset
+•	Ethical constraints on intelligence scoring
+________________________________________
+13. Conclusion
+This design integrates deterministic game systems with explainable ML analytics while maintaining clarity, fairness, and scalability. It is suitable for both academic evaluation and production-quality development.
+________________________________________
+Document Version: 2.0
+Status: ML-Integrated Design Document
+

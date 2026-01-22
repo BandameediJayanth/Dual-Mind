@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.Python
+env/
+venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Python ML
+*.pkl
+*.pickle
+*.h5
+*.model
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+
+# Testing
+coverage/
+.pytest_cache/
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,56 @@
+{
+  "name": "dual-mind",
+  "version": "1.0.0",
+  "description": "Dual Mind - Browser-Based Multiplayer Game Suite with ML-Driven Performance Monitoring",
+  "main": "src/js/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.js",
+    "format": "prettier --write src/**/*.js"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@jest/globals": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.0",
+    "vite": "^5.0.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "moduleFileExtensions": ["js", "mjs"],
+    "testMatch": ["**/tests/**/*.test.js", "**/__tests__/**/*.js"],
+    "transform": {},
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/js/main.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 50,
+        "functions": 50,
+        "lines": 50,
+        "statements": 50
+      }
+    }
+  },
+  "author": "",
+  "license": "MIT",
+  "keywords": [
+    "games",
+    "multiplayer",
+    "machine-learning",
+    "performance-tracking",
+    "iq-monitoring"
+  ]
+}

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Dual Mind Logo - Human/AI dual face design -->
+  <defs>
+    <linearGradient id="humanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e74c3c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c0392b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2980b9;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Human side (left - orange/red) -->
+  <path d="M100 20 
+           C60 20 35 50 35 90
+           C35 120 45 145 55 160
+           L55 180
+           L100 180
+           L100 20Z" 
+        fill="url(#humanGrad)" 
+        stroke="#fff" 
+        stroke-width="3"/>
+  
+  <!-- Human face features -->
+  <ellipse cx="70" cy="80" rx="8" ry="10" fill="#fff" opacity="0.9"/>
+  <path d="M60 120 Q75 135 90 120" stroke="#fff" stroke-width="3" fill="none"/>
+  <path d="M50 100 L65 95" stroke="#fff" stroke-width="2" fill="none"/>
+  
+  <!-- AI side (right - blue) -->
+  <path d="M100 20 
+           C140 20 165 50 165 90
+           C165 120 155 145 145 160
+           L145 180
+           L100 180
+           L100 20Z" 
+        fill="url(#aiGrad)" 
+        stroke="#fff" 
+        stroke-width="3"/>
+  
+  <!-- AI/Circuit features -->
+  <rect x="120" y="70" width="16" height="20" rx="2" fill="#fff" opacity="0.9"/>
+  <line x1="128" y1="75" x2="128" y2="85" stroke="#3498db" stroke-width="2"/>
+  <circle cx="128" cy="78" r="3" fill="#3498db"/>
+  
+  <!-- Circuit lines -->
+  <path d="M110 100 L120 100 L120 110 L140 110" stroke="#fff" stroke-width="2" fill="none"/>
+  <path d="M110 130 L125 130 L125 140 L140 140" stroke="#fff" stroke-width="2" fill="none"/>
+  <circle cx="140" cy="110" r="3" fill="#fff"/>
+  <circle cx="140" cy="140" r="3" fill="#fff"/>
+  
+  <!-- Center dividing line -->
+  <line x1="100" y1="25" x2="100" y2="175" stroke="#fff" stroke-width="2" stroke-dasharray="5,3"/>
+</svg>
