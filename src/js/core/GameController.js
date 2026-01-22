@@ -9,10 +9,10 @@ import { FourInARow } from '../games/FourInARow.js';
 import { DotsAndBoxes } from '../games/DotsAndBoxes.js';
 import { MemoryMatch } from '../games/MemoryMatch.js';
 import { WordChain } from '../games/WordChain.js';
-import { Game24 } from '../games/Game24.js';
-import { MiniSudoku } from '../games/MiniSudoku.js';
 import { Ludo } from '../games/Ludo.js';
-import { Reversi } from '../games/Reversi.js';
+import { ColorWars } from '../games/ColorWars.js';
+import { SeaWars } from '../games/SeaWars.js';
+import { SnakeAndLadders } from '../games/SnakeAndLadders.js';
 
 /**
  * Game metadata for all available games
@@ -78,26 +78,6 @@ export const GAMES = {
         difficulty: 'Medium',
         cognitiveSkills: ['Vocabulary', 'Quick Thinking']
     },
-    game24: {
-        id: 'game24',
-        name: '24 Game',
-        icon: '🔢',
-        category: 'Math',
-        description: 'Use four numbers and operators to make 24.',
-        players: 2,
-        difficulty: 'Hard',
-        cognitiveSkills: ['Arithmetic', 'Problem Solving']
-    },
-    minisudoku: {
-        id: 'minisudoku',
-        name: 'Mini Sudoku',
-        icon: '🧩',
-        category: 'Logic',
-        description: 'Fill the 4x4 grid with numbers 1-4.',
-        players: 1,
-        difficulty: 'Medium',
-        cognitiveSkills: ['Logic', 'Deduction']
-    },
     ludo: {
         id: 'ludo',
         name: 'Ludo',
@@ -108,15 +88,35 @@ export const GAMES = {
         difficulty: 'Easy',
         cognitiveSkills: ['Risk Assessment', 'Adaptability']
     },
-    reversi: {
-        id: 'reversi',
-        name: 'Reversi',
-        icon: '⚫',
-        category: 'Strategy',
-        description: 'Flip opponent pieces to your color.',
+    colorwars: {
+        id: 'colorwars',
+        name: 'Color Wars',
+        icon: '🎨',
+        category: 'Puzzle',
+        description: 'Strategic color-based gameplay.',
         players: 2,
         difficulty: 'Medium',
-        cognitiveSkills: ['Strategic Thinking', 'Planning']
+        cognitiveSkills: ['Strategic Thinking', 'Pattern Recognition']
+    },
+    seawars: {
+        id: 'seawars',
+        name: 'Sea Wars',
+        icon: '⚓',
+        category: 'Strategy',
+        description: 'Naval battle strategy game.',
+        players: 2,
+        difficulty: 'Medium',
+        cognitiveSkills: ['Strategy', 'Tactical Planning']
+    },
+    snakeandladders: {
+        id: 'snakeandladders',
+        name: 'Snake & Ladders',
+        icon: '🎯',
+        category: 'Board',
+        description: 'Classic race game with snakes and ladders.',
+        players: 2,
+        difficulty: 'Easy',
+        cognitiveSkills: ['Luck', 'Decision Making']
     }
 };
 
@@ -147,10 +147,10 @@ export class GameController {
             dotsandboxes: new DotsAndBoxes(this.eventBus),
             memorymatch: new MemoryMatch(this.eventBus),
             wordchain: new WordChain(this.eventBus),
-            game24: new Game24(this.eventBus),
-            minisudoku: new MiniSudoku(this.eventBus),
             ludo: new Ludo(this.eventBus),
-            reversi: new Reversi(this.eventBus)
+            colorwars: new ColorWars(this.eventBus),
+            seawars: new SeaWars(this.eventBus),
+            snakeandladders: new SnakeAndLadders(this.eventBus)
         };
         
         // Set up event listeners

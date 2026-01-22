@@ -1,230 +1,325 @@
-/**
- * Word Chain - Word Association Game
- * Each word must start with the last letter of the previous word
- */
+const allChains = [
+  ["GO", "DOWN", "FALL", "BACK", "STAGE", "NAME", "PLATE", "EDGE"],
+  ["HIGH", "GROUND", "LEVEL", "LINE", "END", "DATE", "EVENT", "TIME"],
+  ["BLACK", "CAT", "TAIL", "LIGHT", "TRAP", "PLAN", "NOTE", "END"],
+  ["WATER", "RISE", "END", "DROP", "POINT", "TEST", "TRACK", "KEY"],
+  ["RAIN", "NIGHT", "TIME", "END", "DAY", "YARD", "DOOR", "ROOM"],
+  ["FIRE", "ENGINE", "EXIT", "TIME", "END", "DATE", "EVENT", "TICKET"],
+  ["FAST", "TRAIN", "NOTE", "END", "DOOR", "ROOM", "MEAL", "LIST"],
+  ["STREET", "TREE", "END", "DOOR", "ROAD", "DRIVE", "EVENT", "TIME"],
+  ["GREEN", "NET", "TEAM", "MIND", "DREAM", "MAP", "PLACE", "EVENT"],
+  ["BOOK", "KEEP", "PAGE", "EDGE", "END", "DATE", "EVENT", "TIME"],
+  ["LONG", "GAME", "END", "DAY", "YEAR", "ROAD", "DOOR", "ROOM"],
+  ["AIR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END"],
+  ["COLD", "DAY", "YEAR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST"],
+  ["SMALL", "LAKE", "END", "DOOR", "ROAD", "DRIVE", "EVENT", "TIME"],
+  ["BIG", "GAME", "END", "DATE", "EVENT", "TIME", "END", "DOOR"],
+  ["WHITE", "EAR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST", "TIME"],
+  ["DEEP", "POOL", "LIGHT", "TRAP", "PLAN", "NOTE", "END", "DAY"],
+  ["STRONG", "GAME", "END", "DAY", "YEAR", "ROAD", "DOOR", "ROOM"],
+  ["DARK", "KEY", "YARD", "DOOR", "ROAD", "DRIVE", "EVENT", "TIME"],
+  ["QUICK", "KIT", "TIME", "END", "DATE", "EVENT", "TIME", "END"],
+  ["SCHOOL", "LAB", "BOOK", "KEEP", "PAGE", "EDGE", "END", "DATE"],
+  ["ROAD", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END", "DAY"],
+  ["HAND", "DOOR", "ROAD", "DRIVE", "EVENT", "TIME", "END", "DATE"],
+  ["PARK", "KEEP", "PAGE", "EDGE", "END", "DATE", "EVENT", "TIME"],
+  ["GAME", "END", "DATE", "EVENT", "TIME", "END", "DAY", "YEAR"],
+  ["STONE", "EDGE", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["SNOW", "WALL", "LIGHT", "TRAP", "PLAN", "NOTE", "END", "DATE"],
+  ["MOON", "NET", "TEAM", "MIND", "DREAM", "MAP", "PLACE", "EVENT"],
+  ["ROAD", "DRIVE", "EVENT", "TIME", "END", "DATE", "EVENT", "TICKET"],
+  ["TABLE", "EDGE", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["LIGHT", "TRAP", "PLAN", "NOTE", "END", "DATE", "EVENT", "TIME"],
+  ["DEEP", "POOL", "LIGHT", "TRAP", "PLAN", "NOTE", "END", "DATE"],
+  ["BLUE", "EYE", "EAR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST"],
+  ["BLACK", "KEY", "YARD", "DOOR", "ROOM", "MEAL", "LIST", "TIME"],
+  ["CITY", "YARD", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END"],
+  ["HOUSE", "EDGE", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["LARGE", "EAR", "ROAD", "DRIVE", "EVENT", "TIME", "END", "DATE"],
+  ["RED", "DOOR", "ROAD", "DRIVE", "EVENT", "TIME", "END", "DATE"],
+  ["SMALL", "LAKE", "EDGE", "END", "DATE", "EVENT", "TIME", "END"],
+  ["CLEAR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END"],
+  ["NIGHT", "TIME", "END", "DAY", "YEAR", "ROAD", "DOOR", "ROOM"],
+  ["DAY", "YEAR", "ROAD", "DRIVE", "EVENT", "TIME", "END", "DATE"],
+  ["YEAR", "ROAD", "DRIVE", "EVENT", "TIME", "END", "DAY", "YEAR"],
+  ["TREE", "EAR", "ROAD", "DRIVE", "EVENT", "TIME", "END", "DATE"],
+  ["SNOW", "WALL", "LIGHT", "TRAP", "PLAN", "NOTE", "END", "DATE"],
+  ["RIVER", "ROAD", "DRIVE", "EVENT", "TIME", "END", "DAY", "YEAR"],
+  ["MAP", "PLACE", "EDGE", "END", "DATE", "EVENT", "TIME", "END"],
+  ["COAL", "LAND", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END"],
+  ["TRAIN", "NOTE", "END", "DAY", "YEAR", "ROAD", "DOOR", "ROOM"],
+  ["WIND", "DOOR", "ROAD", "DRIVE", "EVENT", "TIME", "END", "DATE"],
+  ["RAIN", "NET", "TEAM", "MAP", "PLACE", "EDGE", "END", "DATE"],
+  ["LEAF", "FALL", "BACK", "COURT", "TIME", "END", "DATE", "EVENT"],
+  ["ROAD", "DRIVE", "EVENT", "TIME", "END", "DATE", "EVENT", "PLACE"],
+  ["DESK", "KEY", "YARD", "DOOR", "ROOM", "MEAL", "LIST", "TIME"],
+  ["CAT", "TAIL", "LIGHT", "TRAP", "PLAN", "NOTE", "END", "DATE"],
+  ["DOG", "GATE", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["STONE", "EDGE", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["BALL", "LAND", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END"],
+  ["ROOM", "MEAL", "LIST", "TIME", "END", "DATE", "EVENT", "TICKET"],
+  ["FIRE", "EXIT", "TIME", "END", "DATE", "EVENT", "TIME", "END"],
+  ["SCHOOL", "LAB", "BOOK", "KEEP", "PAGE", "EDGE", "END", "DATE"],
+  ["COLD", "DAY", "YEAR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST"],
+  ["GOLD", "DUST", "TREE", "EAR", "ROAD", "DOOR", "ROOM", "MEAL"],
+  ["SILVER", "RING", "GOLD", "DUST", "TREE", "EAR", "ROAD", "DOOR"],
+  ["SNOW", "WALL", "LIGHT", "TRAP", "PLAN", "NOTE", "END", "DATE"],
+  ["LAKE", "EDGE", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["FAST", "TRAIN", "NOTE", "END", "DAY", "YEAR", "ROAD", "DRIVE"],
+  ["LONG", "GAME", "END", "DAY", "YEAR", "ROAD", "DRIVE", "EVENT"],
+  ["NIGHT", "TIME", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["RED", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END", "DAY"],
+  ["TREE", "EAR", "ROAD", "DRIVE", "EVENT", "TIME", "END", "DATE"],
+  ["GAME", "END", "DATE", "EVENT", "TIME", "END", "DAY", "YEAR"],
+  ["STAGE", "EDGE", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["HOUSE", "EDGE", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["RAIN", "NET", "TEAM", "MAP", "PLACE", "EDGE", "END", "DATE"],
+  ["LEAF", "FALL", "BACK", "COURT", "TIME", "END", "DATE", "EVENT"],
+  ["ROAD", "DRIVE", "EVENT", "TIME", "END", "DATE", "EVENT", "PLACE"],
+  ["DESK", "KEY", "YARD", "DOOR", "ROOM", "MEAL", "LIST", "TIME"],
+  ["CAT", "TAIL", "LIGHT", "TRAP", "PLAN", "NOTE", "END", "DATE"],
+  ["DOG", "GATE", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["STONE", "EDGE", "END", "DATE", "EVENT", "TIME", "END", "DAY"],
+  ["BALL", "LAND", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END"],
+  ["ROOM", "MEAL", "LIST", "TIME", "END", "DATE", "EVENT", "TICKET"],
+  ["FIRE", "EXIT", "TIME", "END", "DATE", "EVENT", "TIME", "END"],
+  ["CITY", "YARD", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END"],
+  ["WHITE", "EAR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST", "TIME"],
+  ["DARK", "KEY", "YARD", "DOOR", "ROAD", "DRIVE", "EVENT", "TIME"],
+  ["SILVER", "RING", "GOLD", "DUST", "TREE", "EAR", "ROAD", "DOOR"],
+  ["GOLD", "DUST", "TREE", "EAR", "ROAD", "DOOR", "ROOM", "MEAL"],
+  ["FAST", "TRAIN", "NOTE", "END", "DOOR", "ROOM", "MEAL", "LIST"],
+  ["GREEN", "NET", "TEAM", "MIND", "DREAM", "MAP", "PLACE", "EVENT"],
+  ["BLUE", "EYE", "EAR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST"],
+  ["MOON", "NET", "TEAM", "MIND", "DREAM", "MAP", "PLACE", "EVENT"],
+  ["PARK", "KEEP", "PAGE", "EDGE", "END", "DATE", "EVENT", "TIME"],
+  ["CLEAR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END"],
+  ["QUICK", "KIT", "TIME", "END", "DATE", "EVENT", "TIME", "END"],
+  ["BLACK", "CAT", "TAIL", "LIGHT", "TRAP", "PLAN", "NOTE", "END"],
+  ["WATER", "RISE", "END", "DROP", "POINT", "TEST", "TRACK", "KEY"],
+  ["RAIN", "NIGHT", "TIME", "END", "DAY", "YARD", "DOOR", "ROOM"],
+  ["FIRE", "ENGINE", "EXIT", "TIME", "END", "DATE", "EVENT", "TICKET"],
+  ["FAST", "TRAIN", "NOTE", "END", "DOOR", "ROOM", "MEAL", "LIST"],
+  ["STREET", "TREE", "END", "DOOR", "ROAD", "DRIVE", "EVENT", "TIME"],
+  ["GREEN", "NET", "TEAM", "MIND", "DREAM", "MAP", "PLACE", "EVENT"],
+  ["BOOK", "KEEP", "PAGE", "EDGE", "END", "DATE", "EVENT", "TIME"],
+  ["LONG", "GAME", "END", "DAY", "YEAR", "ROAD", "DOOR", "ROOM"],
+  ["AIR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST", "TIME", "END"],
+  ["COLD", "DAY", "YEAR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST"],
+  ["SMALL", "LAKE", "END", "DOOR", "ROAD", "DRIVE", "EVENT", "TIME"],
+  ["BIG", "GAME", "END", "DATE", "EVENT", "TIME", "END", "DOOR"],
+  ["WHITE", "EAR", "ROAD", "DOOR", "ROOM", "MEAL", "LIST", "TIME"],
+  ["DEEP", "POOL", "LIGHT", "TRAP", "PLAN", "NOTE", "END", "DAY"],
+  ["STRONG", "GAME", "END", "DAY", "YEAR", "ROAD", "DOOR", "ROOM"],
+  ["DARK", "KEY", "YARD", "DOOR", "ROAD", "DRIVE", "EVENT", "TIME"],
+  ["QUICK", "KIT", "TIME", "END", "DATE", "EVENT", "TIME", "END"]
+];
 
-import { BaseGame } from './BaseGame.js';
-
-export class WordChain extends BaseGame {
-    constructor(eventBus) {
-        super(eventBus);
-        this.minWordLength = 3;
-        this.turnTimeLimit = 30; // seconds
-        
-        // Basic word validation - in production, use a dictionary API
-        this.commonWords = new Set([
-            'apple', 'elephant', 'tiger', 'rabbit', 'tree', 'eagle', 'elephant',
-            'ant', 'turtle', 'ear', 'rain', 'night', 'table', 'egg', 'goat',
-            'train', 'nest', 'star', 'river', 'rose', 'earth', 'heart', 'time',
-            'eye', 'end', 'dog', 'game', 'echo', 'orange', 'energy', 'yellow',
-            'water', 'rain', 'nice', 'every', 'year', 'real', 'love', 'even',
-            'never', 'ring', 'grape', 'enter', 'ratio', 'ocean', 'noon', 'name'
-        ]);
-    }
-
-    createInitialState() {
-        const starterWords = ['apple', 'game', 'tiger', 'ocean', 'night'];
-        const startWord = starterWords[Math.floor(Math.random() * starterWords.length)];
-        
-        return {
-            words: [{ word: startWord, player: 0 }], // Player 0 = system
-            currentLetter: startWord.slice(-1).toUpperCase(),
-            usedWords: new Set([startWord.toLowerCase()]),
-            scores: { 1: 0, 2: 0 },
-            currentInput: '',
-            invalidReason: null,
-            turnStartTime: Date.now()
-        };
-    }
-
-    validateMove(moveData) {
-        const { word } = moveData;
-        
-        if (!word || typeof word !== 'string') {
-            return { valid: false, reason: 'Please enter a word' };
-        }
-        
-        const cleanWord = word.trim().toLowerCase();
-        
-        if (cleanWord.length < this.minWordLength) {
-            return { valid: false, reason: `Word must be at least ${this.minWordLength} letters` };
-        }
-        
-        if (!/^[a-z]+$/.test(cleanWord)) {
-            return { valid: false, reason: 'Word must contain only letters' };
-        }
-        
-        const requiredLetter = this.state.currentLetter.toLowerCase();
-        if (cleanWord[0] !== requiredLetter) {
-            return { valid: false, reason: `Word must start with "${this.state.currentLetter}"` };
-        }
-        
-        if (this.state.usedWords.has(cleanWord)) {
-            return { valid: false, reason: 'Word has already been used' };
-        }
-        
-        // In production, validate against a dictionary API
-        // For now, accept all properly formatted words
-        
-        return { valid: true };
-    }
-
-    applyMove(moveData) {
-        const { word } = moveData;
-        const cleanWord = word.trim().toLowerCase();
-        
-        this.state.words.push({ word: cleanWord, player: this.currentPlayer });
-        this.state.usedWords.add(cleanWord);
-        this.state.currentLetter = cleanWord.slice(-1).toUpperCase();
-        this.state.scores[this.currentPlayer] += cleanWord.length; // Score by word length
-        this.state.currentInput = '';
-        this.state.invalidReason = null;
-        this.state.turnStartTime = Date.now();
-    }
-
-    checkGameOver() {
-        // Game continues until a player can't think of a word (timeout)
-        // Or reaches a score threshold
-        const scoreLimit = 50;
-        
-        if (this.state.scores[1] >= scoreLimit) {
-            return { gameOver: true, winner: 1, reason: 'Player 1 reached the score limit!' };
-        }
-        if (this.state.scores[2] >= scoreLimit) {
-            return { gameOver: true, winner: 2, reason: 'Player 2 reached the score limit!' };
-        }
-        
-        return { gameOver: false };
-    }
-
-    getValidMoves() {
-        // Return hints - words starting with current letter
-        const hints = [];
-        const letter = this.state.currentLetter.toLowerCase();
-        
-        for (const word of this.commonWords) {
-            if (word[0] === letter && !this.state.usedWords.has(word)) {
-                hints.push({ word });
-            }
-        }
-        
-        return hints;
-    }
-
-    // Handle player giving up / timeout
-    forfeit(player) {
-        const opponent = player === 1 ? 2 : 1;
-        return {
-            gameOver: true,
-            winner: opponent,
-            reason: `Player ${player} couldn't think of a word!`
-        };
-    }
-
-    render(ctx, boardElement) {
-        if (boardElement) {
-            this.renderDOM(boardElement);
-        }
-    }
-
-    renderDOM(boardElement) {
-        boardElement.className = 'wordchain-board';
-        
-        let html = `
-            <div class="wordchain-header">
-                <div class="wordchain-scores">
-                    <span class="wordchain-score wordchain-score--p1">P1: ${this.state.scores[1]}</span>
-                    <span class="wordchain-score wordchain-score--p2">P2: ${this.state.scores[2]}</span>
-                </div>
-                <div class="wordchain-current-letter">
-                    Next word starts with: <strong>${this.state.currentLetter}</strong>
-                </div>
-            </div>
-            
-            <div class="wordchain-words">
-        `;
-        
-        // Show last 10 words
-        const recentWords = this.state.words.slice(-10);
-        for (const entry of recentWords) {
-            const playerClass = entry.player === 0 ? 'wordchain-word--system' : `wordchain-word--p${entry.player}`;
-            html += `<span class="wordchain-word ${playerClass}">${entry.word}</span>`;
-        }
-        
-        html += '</div>';
-        
-        // Input area
-        html += `
-            <div class="wordchain-input-area">
-                <input type="text" 
-                       class="wordchain-input" 
-                       placeholder="Enter a word starting with ${this.state.currentLetter}..."
-                       value="${this.state.currentInput || ''}"
-                       maxlength="20"
-                       autocomplete="off">
-                <button class="wordchain-submit btn btn--primary">Submit</button>
-                <button class="wordchain-skip btn btn--secondary">Give Up</button>
-            </div>
-        `;
-        
-        if (this.state.invalidReason) {
-            html += `<div class="wordchain-error">${this.state.invalidReason}</div>`;
-        }
-        
-        // Hints
-        const hints = this.getValidMoves().slice(0, 3);
-        if (hints.length > 0) {
-            html += `<div class="wordchain-hints">Hints: ${hints.map(h => h.word).join(', ')}</div>`;
-        }
-        
-        boardElement.innerHTML = html;
-        
-        // Add event handlers
-        const input = boardElement.querySelector('.wordchain-input');
-        const submitBtn = boardElement.querySelector('.wordchain-submit');
-        const skipBtn = boardElement.querySelector('.wordchain-skip');
-        
-        input.addEventListener('input', (e) => {
-            this.state.currentInput = e.target.value;
-        });
-        
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                this.submitWord();
-            }
-        });
-        
-        submitBtn.addEventListener('click', () => {
-            this.submitWord();
-        });
-        
-        skipBtn.addEventListener('click', () => {
-            const result = this.forfeit(this.currentPlayer);
-            this.eventBus.emit('game:end', result);
-        });
-        
-        // Focus input
-        input.focus();
-    }
-
-    submitWord() {
-        const word = this.state.currentInput;
-        const validation = this.validateMove({ word });
-        
-        if (validation.valid) {
-            this.eventBus.emit('game:move', { word, player: this.currentPlayer });
-        } else {
-            this.state.invalidReason = validation.reason;
-            this.eventBus.emit('game:stateUpdate', this.getState());
-        }
-    }
-
-    getMetadata() {
-        return {
-            id: 'wordchain',
-            name: 'Word Chain',
-            players: 2,
-            description: 'Enter words that start with the last letter of the previous word.'
-        };
-    }
+// Pick two random, different chains
+function pickTwoChains() {
+  const idx1 = Math.floor(Math.random() * allChains.length);
+  let idx2;
+  do {
+    idx2 = Math.floor(Math.random() * allChains.length);
+  } while (idx2 === idx1);
+  return [allChains[idx1], allChains[idx2]];
 }
+
+const [chain1, chain2] = pickTwoChains();
+
+let currentTurn = "P1";
+
+const player1 = { element: document.getElementById("player1"), index: 1, revealed: 1, completed: [], chain: chain1 };
+const player2 = { element: document.getElementById("player2"), index: 1, revealed: 1, completed: [], chain: chain2 };
+
+function renderChain(player) {
+  const container = player.element.querySelector(".game-container");
+  container.innerHTML = "";
+
+  player.chain.forEach((word, idx) => {
+    const wordDiv = document.createElement("div");
+    wordDiv.classList.add("word");
+
+    if (idx === 0) {
+      word.split("").forEach(letter => {
+        const span = document.createElement("span");
+        span.textContent = letter;
+        wordDiv.appendChild(span);
+      });
+    } 
+    else if (idx === player.index) {
+      for (let i = 0; i < word.length; i++) {
+        if (i < player.revealed) {
+          const span = document.createElement("span");
+          span.textContent = word[i];
+          wordDiv.appendChild(span);
+        } else {
+          const input = document.createElement("input");
+          input.maxLength = 1;
+          input.addEventListener("input", e => moveToNext(e, player));
+          input.addEventListener("keydown", e => handleKey(e, player));
+          wordDiv.appendChild(input);
+        }
+      }
+    } 
+    else if (idx < player.index) {
+      word.split("").forEach(letter => {
+        const span = document.createElement("span");
+        span.textContent = letter;
+        wordDiv.appendChild(span);
+      });
+    } 
+    else {
+      const span = document.createElement("span");
+      span.textContent = word[0];
+      wordDiv.appendChild(span);
+      for (let i = 1; i < word.length; i++) {
+        const input = document.createElement("input");
+        input.disabled = true;
+        wordDiv.appendChild(input);
+      }
+    }
+    container.appendChild(wordDiv);
+  });
+
+  focusFirstEmpty(player);
+}
+
+function moveToNext(e, player) {
+  const inputs = Array.from(player.element.querySelector(".game-container").children[player.index].querySelectorAll("input"));
+  const idx = inputs.indexOf(e.target);
+  if (e.target.value && idx < inputs.length - 1) {
+    inputs[idx + 1].focus();
+  }
+}
+
+function handleKey(e, player) {
+  const inputs = Array.from(player.element.querySelector(".game-container").children[player.index].querySelectorAll("input"));
+  const idx = inputs.indexOf(e.target);
+
+  if (e.key === "Enter") {
+    e.preventDefault();
+    document.getElementById("check-btn").click();
+  } 
+  else if (e.key === "Backspace") {
+    if (!e.target.value && idx > 0) {
+      inputs[idx - 1].focus();
+    }
+  }
+}
+
+function focusFirstEmpty(player) {
+  const firstEmpty = player.element.querySelector(".game-container .word:nth-child(" + (player.index + 1) + ") input");
+  if (firstEmpty) firstEmpty.focus();
+}
+
+function checkWord(player) {
+  const currentWord = player.chain[player.index];
+  const wordDiv = player.element.querySelector(".game-container").children[player.index];
+  const inputs = wordDiv.querySelectorAll("input");
+  let guessedWord = currentWord.substring(0, player.revealed);
+
+  inputs.forEach(inp => guessedWord += inp.value.toUpperCase() || "_");
+
+  if (guessedWord === currentWord) {
+    player.completed.push(currentWord);
+    player.element.querySelector(".message").textContent = "✅ Correct!";
+    player.index++;
+    player.revealed = 1;
+
+    if (player.index >= player.chain.length) {
+      showWinnerModal();
+      document.getElementById("check-btn").disabled = true;
+      return;
+    }
+    renderChain(player);
+  } else {
+    player.element.querySelector(".message").textContent = "❌ Wrong! Passing turn...";
+    if (player.revealed < currentWord.length) {
+      player.revealed++;
+    }
+    switchTurn();
+  }
+}
+
+function switchTurn() {
+  currentTurn = currentTurn === "P1" ? "P2" : "P1";
+
+  if (currentTurn === "P1") {
+    player1.element.classList.remove("dimmed");
+    player2.element.classList.add("dimmed");
+    renderChain(player1);
+  } else {
+    player2.element.classList.remove("dimmed");
+    player1.element.classList.add("dimmed");
+    renderChain(player2);
+  }
+
+  document.getElementById("turn-indicator").textContent = `Current Turn: ${currentTurn}`;
+}
+
+function showWinnerModal() {
+  const winnerTitle = `${currentTurn} Wins! 🎉`;
+  document.getElementById("winner-title").innerHTML = winnerTitle;
+
+  function renderPlayerChain(player) {
+    return player.chain.map((word, idx) => {
+      let wordHtml = '';
+      // For completed words, all letters are dark
+      // For current word, only revealed letters are dark
+      // For future words, only the first letter is dark, rest are dim
+      if (idx < player.index) {
+        // Completed word
+        for (let i = 0; i < word.length; i++) {
+          wordHtml += `<span style="background:#a3f6a3; color:#222; padding:3px 6px; margin:2px; border-radius:4px; font-weight:bold;">${word[i]}</span>`;
+        }
+      } else if (idx === player.index) {
+        // Current word: revealed letters dark, rest dim
+        for (let i = 0; i < word.length; i++) {
+          if (i < player.revealed) {
+            wordHtml += `<span style="background:#a3f6a3; color:#222; padding:3px 6px; margin:2px; border-radius:4px; font-weight:bold;">${word[i]}</span>`;
+          } else {
+            wordHtml += `<span style="background:#eee; color:#bbb; padding:3px 6px; margin:2px; border-radius:4px;">${word[i]}</span>`;
+          }
+        }
+      } else {
+        // Future word: only first letter dark, rest dim
+        for (let i = 0; i < word.length; i++) {
+          if (i === 0) {
+            wordHtml += `<span style="background:#a3f6a3; color:#222; padding:3px 6px; margin:2px; border-radius:4px; font-weight:bold;">${word[i]}</span>`;
+          } else {
+            wordHtml += `<span style="background:#eee; color:#bbb; padding:3px 6px; margin:2px; border-radius:4px;">${word[i]}</span>`;
+          }
+        }
+      }
+      return `<div style="margin-bottom:5px;">${wordHtml}</div>`;
+    }).join('');
+  }
+
+  const details = `<strong>P1:</strong><br>${renderPlayerChain(player1)}<br><strong>P2:</strong><br>${renderPlayerChain(player2)}`;
+  document.getElementById("winner-details").innerHTML = details;
+
+  document.getElementById("winner-modal").style.display = "block";
+}
+
+// Modal close logic
+document.getElementById("close-modal").onclick = function() {
+    document.getElementById("winner-modal").style.display = "none";
+};
+window.onclick = function(event) {
+    if (event.target == document.getElementById("winner-modal")) {
+        document.getElementById("winner-modal").style.display = "none";
+    }
+};
+
+document.getElementById("check-btn").addEventListener("click", () => {
+  if (currentTurn === "P1") {
+    checkWord(player1);
+  } else {
+    checkWord(player2);
+  }
+});
+
+renderChain(player1);
+renderChain(player2);
+switchTurn(); // initialize dimmed state and focus

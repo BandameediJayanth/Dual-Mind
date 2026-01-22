@@ -1,252 +1,163 @@
-/**
- * Dots and Boxes - Classic Pen and Paper Game
- * Draw lines between dots to complete boxes
- */
+// ----- Config -----
+const GRID_DOTS = 7;            // 7x7 dots => 6x6 boxes
+const SPACING   = 60;           // px between dot centers
+const DOT       = 14;           // dot diameter
+const LINE_THK  = 10;           // visible line thickness
 
-import { BaseGame } from './BaseGame.js';
+// ----- State -----
+let currentPlayer = 1;          // 1 or 2
+let scores = {1: 0, 2: 0};
+let filledBoxes = 0;
+const totalBoxes = (GRID_DOTS - 1) * (GRID_DOTS - 1);
+const lines = {};               // "h-r-c"/"v-r-c" => true/false
+const boxes = [];               // list of {r,c,el,owner}
 
-export class DotsAndBoxes extends BaseGame {
-    constructor(eventBus) {
-        super(eventBus);
-        this.gridSize = 5; // 5x5 dots = 4x4 boxes
-    }
+const container   = document.getElementById('game-container');
+const popup       = document.getElementById('popup');
+const winnerText  = document.getElementById('winner-text');
+const restartBtn  = document.getElementById('restart');
 
-    createInitialState() {
-        const boxes = this.gridSize - 1;
-        
-        // Horizontal lines: (gridSize-1) rows, gridSize columns
-        const horizontalLines = [];
-        for (let r = 0; r < this.gridSize; r++) {
-            horizontalLines.push(Array(boxes).fill(0));
-        }
-        
-        // Vertical lines: gridSize rows, (gridSize-1) columns
-        const verticalLines = [];
-        for (let r = 0; r < boxes; r++) {
-            verticalLines.push(Array(this.gridSize).fill(0));
-        }
-        
-        // Box ownership
-        const boxOwners = [];
-        for (let r = 0; r < boxes; r++) {
-            boxOwners.push(Array(boxes).fill(0));
-        }
-        
-        return {
-            horizontalLines,
-            verticalLines,
-            boxOwners,
-            scores: { 1: 0, 2: 0 }
-        };
-    }
-
-    validateMove(moveData) {
-        const { type, row, col } = moveData;
-        
-        if (type === 'horizontal') {
-            if (row < 0 || row >= this.gridSize || 
-                col < 0 || col >= this.gridSize - 1) {
-                return { valid: false, reason: 'Out of bounds' };
-            }
-            if (this.state.horizontalLines[row][col] !== 0) {
-                return { valid: false, reason: 'Line already drawn' };
-            }
-        } else if (type === 'vertical') {
-            if (row < 0 || row >= this.gridSize - 1 || 
-                col < 0 || col >= this.gridSize) {
-                return { valid: false, reason: 'Out of bounds' };
-            }
-            if (this.state.verticalLines[row][col] !== 0) {
-                return { valid: false, reason: 'Line already drawn' };
-            }
-        } else {
-            return { valid: false, reason: 'Invalid line type' };
-        }
-        
-        return { valid: true };
-    }
-
-    applyMove(moveData) {
-        const { type, row, col } = moveData;
-        
-        if (type === 'horizontal') {
-            this.state.horizontalLines[row][col] = this.currentPlayer;
-        } else {
-            this.state.verticalLines[row][col] = this.currentPlayer;
-        }
-        
-        // Check for completed boxes
-        this.lastMoveCompletedBox = this.checkCompletedBoxes();
-    }
-
-    checkCompletedBoxes() {
-        let completed = false;
-        const boxes = this.gridSize - 1;
-        
-        for (let r = 0; r < boxes; r++) {
-            for (let c = 0; c < boxes; c++) {
-                if (this.state.boxOwners[r][c] === 0) {
-                    // Check if box is complete
-                    const top = this.state.horizontalLines[r][c];
-                    const bottom = this.state.horizontalLines[r + 1][c];
-                    const left = this.state.verticalLines[r][c];
-                    const right = this.state.verticalLines[r][c + 1];
-                    
-                    if (top && bottom && left && right) {
-                        this.state.boxOwners[r][c] = this.currentPlayer;
-                        this.state.scores[this.currentPlayer]++;
-                        completed = true;
-                    }
-                }
-            }
-        }
-        
-        return completed;
-    }
-
-    checkExtraTurn(moveData) {
-        return this.lastMoveCompletedBox;
-    }
-
-    checkGameOver() {
-        const boxes = this.gridSize - 1;
-        const totalBoxes = boxes * boxes;
-        const claimed = this.state.scores[1] + this.state.scores[2];
-        
-        if (claimed === totalBoxes) {
-            let winner = null;
-            if (this.state.scores[1] > this.state.scores[2]) {
-                winner = 1;
-            } else if (this.state.scores[2] > this.state.scores[1]) {
-                winner = 2;
-            }
-            return { 
-                gameOver: true, 
-                winner, 
-                reason: winner ? `Player ${winner} wins with ${this.state.scores[winner]} boxes` : 'Draw'
-            };
-        }
-        
-        return { gameOver: false };
-    }
-
-    getValidMoves() {
-        const moves = [];
-        
-        // Horizontal lines
-        for (let r = 0; r < this.gridSize; r++) {
-            for (let c = 0; c < this.gridSize - 1; c++) {
-                if (this.state.horizontalLines[r][c] === 0) {
-                    moves.push({ type: 'horizontal', row: r, col: c });
-                }
-            }
-        }
-        
-        // Vertical lines
-        for (let r = 0; r < this.gridSize - 1; r++) {
-            for (let c = 0; c < this.gridSize; c++) {
-                if (this.state.verticalLines[r][c] === 0) {
-                    moves.push({ type: 'vertical', row: r, col: c });
-                }
-            }
-        }
-        
-        return moves;
-    }
-
-    render(ctx, boardElement) {
-        if (boardElement) {
-            this.renderDOM(boardElement);
-        }
-    }
-
-    renderDOM(boardElement) {
-        boardElement.className = 'dotsboxes-board';
-        
-        const cellSize = 60;
-        const dotSize = 12;
-        const lineWidth = 8;
-        
-        let html = `<div class="dotsboxes-scores">
-            <span class="dotsboxes-score dotsboxes-score--p1">P1: ${this.state.scores[1]}</span>
-            <span class="dotsboxes-score dotsboxes-score--p2">P2: ${this.state.scores[2]}</span>
-        </div>`;
-        
-        html += '<div class="dotsboxes-grid">';
-        
-        for (let r = 0; r < this.gridSize; r++) {
-            // Row with dots and horizontal lines
-            html += '<div class="dotsboxes-row">';
-            
-            for (let c = 0; c < this.gridSize; c++) {
-                // Dot
-                html += `<div class="dotsboxes-dot"></div>`;
-                
-                // Horizontal line (not after last dot)
-                if (c < this.gridSize - 1) {
-                    const lineVal = this.state.horizontalLines[r][c];
-                    const lineClass = lineVal ? `dotsboxes-line--p${lineVal}` : 'dotsboxes-line--empty';
-                    html += `
-                        <div class="dotsboxes-hline ${lineClass}" 
-                             data-type="horizontal" data-row="${r}" data-col="${c}">
-                        </div>
-                    `;
-                }
-            }
-            
-            html += '</div>';
-            
-            // Row with vertical lines and boxes (not after last row of dots)
-            if (r < this.gridSize - 1) {
-                html += '<div class="dotsboxes-row dotsboxes-row--between">';
-                
-                for (let c = 0; c < this.gridSize; c++) {
-                    // Vertical line
-                    const lineVal = this.state.verticalLines[r][c];
-                    const lineClass = lineVal ? `dotsboxes-line--p${lineVal}` : 'dotsboxes-line--empty';
-                    html += `
-                        <div class="dotsboxes-vline ${lineClass}" 
-                             data-type="vertical" data-row="${r}" data-col="${c}">
-                        </div>
-                    `;
-                    
-                    // Box (not after last vertical line)
-                    if (c < this.gridSize - 1) {
-                        const owner = this.state.boxOwners[r][c];
-                        const boxClass = owner ? `dotsboxes-box--p${owner}` : '';
-                        html += `<div class="dotsboxes-box ${boxClass}"></div>`;
-                    }
-                }
-                
-                html += '</div>';
-            }
-        }
-        
-        html += '</div>';
-        
-        boardElement.innerHTML = html;
-        
-        // Add line click handlers
-        boardElement.querySelectorAll('.dotsboxes-hline, .dotsboxes-vline').forEach(line => {
-            line.addEventListener('click', () => {
-                const type = line.dataset.type;
-                const row = parseInt(line.dataset.row);
-                const col = parseInt(line.dataset.col);
-                
-                const moveData = { type, row, col, player: this.currentPlayer };
-                if (this.validateMove(moveData).valid) {
-                    this.eventBus.emit('game:move', moveData);
-                }
-            });
-        });
-    }
-
-    getMetadata() {
-        return {
-            id: 'dotsandboxes',
-            name: 'Dots and Boxes',
-            players: 2,
-            description: 'Draw lines to complete boxes. Complete a box to score and go again!'
-        };
-    }
+// Utility: set container size so centering works
+function setContainerSize(){
+  const side = (GRID_DOTS - 1) * SPACING + DOT; // last dot edge to edge
+  container.style.width  = `${side}px`;
+  container.style.height = `${side}px`;
 }
+
+// Place a dot centered at (cx, cy)
+function placeDot(r, c){
+  const cx = c * SPACING, cy = r * SPACING;
+  const el = document.createElement('div');
+  el.className = 'dot';
+  el.style.left = `${cx - DOT/2}px`;
+  el.style.top  = `${cy - DOT/2}px`;
+  container.appendChild(el);
+}
+
+// Create a horizontal line between (r,c) and (r,c+1)
+function placeHLine(r, c){
+  const el = document.createElement('div');
+  el.className = 'line horizontal available';
+  el.dataset.type = 'h'; el.dataset.r = r; el.dataset.c = c;
+
+  const y = r * SPACING;
+  const x = c * SPACING;
+
+  el.style.left = `${x + DOT/2}px`;
+  el.style.top  = `${y - LINE_THK/2}px`;
+  el.style.width = `${SPACING - DOT}px`;
+
+  el.addEventListener('click', onLineClick);
+  container.appendChild(el);
+  lines[`h-${r}-${c}`] = false;
+}
+
+// Create a vertical line between (r,c) and (r+1,c)
+function placeVLine(r, c){
+  const el = document.createElement('div');
+  el.className = 'line vertical available';
+  el.dataset.type = 'v'; el.dataset.r = r; el.dataset.c = c;
+
+  const y = r * SPACING;
+  const x = c * SPACING;
+
+  el.style.left  = `${x - LINE_THK/2}px`;
+  el.style.top   = `${y + DOT/2}px`;
+  el.style.height = `${SPACING - DOT}px`;
+
+  el.addEventListener('click', onLineClick);
+  container.appendChild(el);
+  lines[`v-${r}-${c}`] = false;
+}
+
+// Create box area (for color fill when claimed)
+function placeBox(r, c){
+  const el = document.createElement('div');
+  el.className = 'box';
+  const x = c * SPACING, y = r * SPACING;
+  el.style.left   = `${x + DOT/2}px`;
+  el.style.top    = `${y + DOT/2}px`;
+  el.style.width  = `${SPACING - DOT}px`;
+  el.style.height = `${SPACING - DOT}px`;
+  container.appendChild(el);
+  boxes.push({ r, c, el, owner: null });
+}
+
+function buildBoard(){
+  container.innerHTML = '';
+  scores[1] = scores[2] = 0;
+  filledBoxes = 0;
+
+  setContainerSize();
+
+  for(let r=0; r<GRID_DOTS; r++){
+    for(let c=0; c<GRID_DOTS; c++){
+      placeDot(r,c);
+      if(c < GRID_DOTS - 1) placeHLine(r,c);
+      if(r < GRID_DOTS - 1) placeVLine(r,c);
+      if(r < GRID_DOTS - 1 && c < GRID_DOTS - 1) placeBox(r,c);
+    }
+  }
+}
+
+function onLineClick(e){
+  const el = e.currentTarget;
+  if(!el.classList.contains('available')) return; // taken already
+
+  el.classList.remove('available');
+  el.classList.add('taken');
+  const key = `${el.dataset.type}-${el.dataset.r}-${el.dataset.c}`;
+  lines[key] = true;
+
+  // color by player
+  el.style.background = currentPlayer === 1 ? '#1f78ff' : '#ff3b3b';
+
+  // Did this complete one or more boxes?
+  const madeBox = markCompletedBoxes();
+  if(!madeBox){
+    currentPlayer = currentPlayer === 1 ? 2 : 1;
+  }
+
+  if(filledBoxes === totalBoxes){
+    showWinner();
+  }
+}
+
+function markCompletedBoxes(){
+  let any = false;
+  for(const b of boxes){
+    if(b.owner) continue;
+
+    const top    = lines[`h-${b.r}-${b.c}`];
+    const bottom = lines[`h-${b.r+1}-${b.c}`];
+    const left   = lines[`v-${b.r}-${b.c}`];
+    const right  = lines[`v-${b.r}-${b.c+1}`];
+
+    if(top && bottom && left && right){
+      b.owner = currentPlayer;
+      b.el.style.background = currentPlayer === 1 ? 'rgba(31,120,255,0.35)'
+                                                  : 'rgba(255,59,59,0.35)';
+      scores[currentPlayer] += 1;
+      filledBoxes += 1;
+      any = true;
+    }
+  }
+  return any;
+}
+
+function showWinner(){
+  let text;
+  if(scores[1] > scores[2]) text = `Player 1 Wins!\nP1: ${scores[1]}  |  P2: ${scores[2]}`;
+  else if(scores[2] > scores[1]) text = `Player 2 Wins!\nP1: ${scores[1]}  |  P2: ${scores[2]}`;
+  else text = `It's a Draw!\nP1: ${scores[1]}  |  P2: ${scores[2]}`;
+  winnerText.textContent = text;
+  popup.style.display = 'flex';
+}
+
+restartBtn.addEventListener('click', ()=>{
+  popup.style.display = 'none';
+  buildBoard();
+});
+
+// init
+buildBoard();

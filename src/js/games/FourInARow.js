@@ -1,411 +1,240 @@
-/**
- * FourInARow - Connect Four Game
- * Drop pieces to connect four in any direction
- */
-
-import { BaseGame } from './BaseGame.js';
-
-export class FourInARow extends BaseGame {
-    constructor(eventBus) {
-        super(eventBus);
+class FourInARow {
+    constructor() {
         this.rows = 6;
         this.cols = 7;
+        this.board = [];
+        this.currentPlayer = 'red';
+        this.gameActive = true;
+        this.player1Name = 'Player 1';
+        this.player2Name = 'Player 2';
+        this.gameStats = { gamesPlayed: 0, player1Wins: 0, player2Wins: 0, draws: 0 };
+
+        this.initializeGame();
+        this.loadStats();
     }
 
-    /**
-     * Create initial game state
-     * @returns {Object} Initial state
-     */
-    createInitialState() {
-        // Create empty 6x7 grid
-        const board = [];
-        for (let r = 0; r < this.rows; r++) {
-            board.push(Array(this.cols).fill(null));
-        }
-        
-        return {
-            board,
-            winner: null,
-            winningCells: null,
-            lastMove: null
-        };
+    initializeGame() {
+        this.setupEventListeners();
+        this.createBoard();
+        this.updateCurrentPlayerDisplay();
+        this.addEntranceAnimation();
     }
 
-    /**
-     * Validate a move
-     * @param {Object} moveData - { column: 0-6, player: 1|2 }
-     * @returns {Object} Validation result
-     */
-    validateMove(moveData) {
-        const { column } = moveData;
-
-        // Check column is valid
-        if (column < 0 || column >= this.cols) {
-            return { valid: false, reason: 'Invalid column' };
-        }
-
-        // Check column has space
-        if (this.state.board[0][column] !== null) {
-            return { valid: false, reason: 'Column is full' };
-        }
-
-        return { valid: true };
+    setupEventListeners() {
+        document.getElementById('resetButton').addEventListener('click', () => this.resetGame());
     }
 
-    /**
-     * Apply a move to the state
-     * @param {Object} moveData - Move data
-     */
-    applyMove(moveData) {
-        const { column } = moveData;
-        
-        // Find the lowest empty row in this column
+    createBoard() {
+        this.board = Array(this.rows).fill().map(() => Array(this.cols).fill(''));
+
+        const gameBoard = document.getElementById('gameBoard');
+        gameBoard.innerHTML = '';
+
+        // DOM shows top row first but board indexing still starts at row 0 (bottom)
         for (let row = this.rows - 1; row >= 0; row--) {
-            if (this.state.board[row][column] === null) {
-                this.state.board[row][column] = this.currentPlayer;
-                this.state.lastMove = { row, column };
-                break;
-            }
-        }
-    }
-
-    /**
-     * Check if game is over
-     * @returns {Object} { gameOver, winner, reason, winningCells }
-     */
-    checkGameOver() {
-        // Check for winner starting from last move
-        if (this.state.lastMove) {
-            const { row, column } = this.state.lastMove;
-            const player = this.state.board[row][column];
-            
-            // Check all four directions
-            const directions = [
-                [[0, 1], [0, -1]],  // Horizontal
-                [[1, 0], [-1, 0]],  // Vertical
-                [[1, 1], [-1, -1]], // Diagonal /
-                [[1, -1], [-1, 1]]  // Diagonal \
-            ];
-            
-            for (const [dir1, dir2] of directions) {
-                const cells = this.countDirection(row, column, player, dir1, dir2);
-                if (cells.length >= 4) {
-                    this.state.winner = player;
-                    this.state.winningCells = cells;
-                    return {
-                        gameOver: true,
-                        winner: player,
-                        reason: 'Four in a row!',
-                        winningCells: cells
-                    };
-                }
-            }
-        }
-
-        // Check for draw
-        if (this.state.board[0].every(cell => cell !== null)) {
-            return {
-                gameOver: true,
-                winner: 'draw',
-                reason: 'Board is full'
-            };
-        }
-
-        return { gameOver: false };
-    }
-
-    /**
-     * Count connected pieces in a direction
-     * @param {number} row - Starting row
-     * @param {number} col - Starting column
-     * @param {number} player - Player to check
-     * @param {Array} dir1 - First direction [rowDelta, colDelta]
-     * @param {Array} dir2 - Second direction [rowDelta, colDelta]
-     * @returns {Array} Array of connected cells
-     */
-    countDirection(row, col, player, dir1, dir2) {
-        const cells = [[row, col]];
-        
-        // Check direction 1
-        let r = row + dir1[0];
-        let c = col + dir1[1];
-        while (r >= 0 && r < this.rows && c >= 0 && c < this.cols && 
-               this.state.board[r][c] === player) {
-            cells.push([r, c]);
-            r += dir1[0];
-            c += dir1[1];
-        }
-        
-        // Check direction 2
-        r = row + dir2[0];
-        c = col + dir2[1];
-        while (r >= 0 && r < this.rows && c >= 0 && c < this.cols && 
-               this.state.board[r][c] === player) {
-            cells.push([r, c]);
-            r += dir2[0];
-            c += dir2[1];
-        }
-        
-        return cells;
-    }
-
-    /**
-     * Get valid moves for current state
-     * @returns {Array} Array of valid columns
-     */
-    getValidMoves() {
-        const validMoves = [];
-        for (let col = 0; col < this.cols; col++) {
-            if (this.state.board[0][col] === null) {
-                validMoves.push({ column: col });
-            }
-        }
-        return validMoves;
-    }
-
-    /**
-     * Check if a move is a winning move
-     * @param {Object} moveData - Move data
-     * @returns {boolean}
-     */
-    isWinningMove(moveData) {
-        const { column } = moveData;
-        
-        // Find where piece would land
-        let landingRow = -1;
-        for (let row = this.rows - 1; row >= 0; row--) {
-            if (this.state.board[row][column] === null) {
-                landingRow = row;
-                break;
-            }
-        }
-        
-        if (landingRow === -1) return false;
-        
-        // Temporarily place piece
-        this.state.board[landingRow][column] = this.currentPlayer;
-        
-        // Check for win
-        const directions = [
-            [[0, 1], [0, -1]],
-            [[1, 0], [-1, 0]],
-            [[1, 1], [-1, -1]],
-            [[1, -1], [-1, 1]]
-        ];
-        
-        let isWin = false;
-        for (const [dir1, dir2] of directions) {
-            const cells = this.countDirection(landingRow, column, this.currentPlayer, dir1, dir2);
-            if (cells.length >= 4) {
-                isWin = true;
-                break;
-            }
-        }
-        
-        // Remove piece
-        this.state.board[landingRow][column] = null;
-        
-        return isWin;
-    }
-
-    /**
-     * Check if a move is a blocking move
-     * @param {Object} moveData - Move data
-     * @returns {boolean}
-     */
-    isBlockingMove(moveData) {
-        const { column } = moveData;
-        const opponent = this.currentPlayer === 1 ? 2 : 1;
-        
-        // Find where piece would land
-        let landingRow = -1;
-        for (let row = this.rows - 1; row >= 0; row--) {
-            if (this.state.board[row][column] === null) {
-                landingRow = row;
-                break;
-            }
-        }
-        
-        if (landingRow === -1) return false;
-        
-        // Check if opponent would win here
-        this.state.board[landingRow][column] = opponent;
-        
-        const directions = [
-            [[0, 1], [0, -1]],
-            [[1, 0], [-1, 0]],
-            [[1, 1], [-1, -1]],
-            [[1, -1], [-1, 1]]
-        ];
-        
-        let wouldWin = false;
-        for (const [dir1, dir2] of directions) {
-            const cells = this.countDirection(landingRow, column, opponent, dir1, dir2);
-            if (cells.length >= 4) {
-                wouldWin = true;
-                break;
-            }
-        }
-        
-        // Remove piece
-        this.state.board[landingRow][column] = null;
-        
-        return wouldWin;
-    }
-
-    /**
-     * Render the game board
-     * @param {CanvasRenderingContext2D} ctx - Canvas context
-     * @param {HTMLElement} boardElement - DOM board element
-     */
-    render(ctx, boardElement) {
-        if (boardElement) {
-            this.renderDOM(boardElement);
-        } else if (ctx) {
-            this.renderCanvas(ctx);
-        }
-    }
-
-    /**
-     * Render using DOM
-     * @param {HTMLElement} boardElement - Board element
-     */
-    renderDOM(boardElement) {
-        boardElement.style.display = 'block';
-        boardElement.className = 'connect4-container';
-        
-        let html = '<div class="connect4-board">';
-        
-        for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
-                const cell = this.state.board[row][col];
-                const isWinning = this.state.winningCells?.some(([r, c]) => r === row && c === col);
-                
-                html += `
-                    <div class="connect4-cell" data-row="${row}" data-col="${col}">
-                        ${cell !== null ? `
-                            <div class="connect4-piece connect4-piece--${cell === 1 ? 'red' : 'yellow'} ${isWinning ? 'connect4-piece--winning' : ''}"></div>
-                        ` : ''}
-                    </div>
-                `;
+                const cell = document.createElement('div');
+                cell.className = 'game-cell';
+                cell.dataset.row = row;
+                cell.dataset.col = col;
+                cell.addEventListener('click', () => this.handleCellClick(col));
+                gameBoard.appendChild(cell);
             }
         }
-        
-        html += '</div>';
-        
-        // Column indicators
-        html += '<div class="connect4-column-indicator">';
-        for (let col = 0; col < this.cols; col++) {
-            const isValid = this.state.board[0][col] === null;
-            html += `<span class="connect4-arrow ${isValid ? '' : 'hidden'}" data-col="${col}">▼</span>`;
-        }
-        html += '</div>';
-        
-        boardElement.innerHTML = html;
+    }
 
-        // Add click handlers
-        boardElement.querySelectorAll('.connect4-cell, .connect4-arrow').forEach(el => {
-            el.addEventListener('click', () => {
-                const col = parseInt(el.dataset.col);
-                if (!isNaN(col) && this.state.board[0][col] === null) {
-                    this.eventBus.emit('game:move', {
-                        column: col,
-                        player: this.currentPlayer,
-                        isWinningMove: this.isWinningMove({ column: col }),
-                        isBlockingMove: this.isBlockingMove({ column: col })
-                    });
-                }
-            });
+    handleCellClick(col) {
+        if (!this.gameActive) return;
+
+        const row = this.getLowestEmptyRow(col);
+        if (row === -1) return;
+
+        this.makeMove(row, col);
+        this.updateBoard();
+
+        if (this.checkWin(row, col)) {
+            this.endGame('win');
+        } else if (this.checkDraw()) {
+            this.endGame('draw');
+        } else {
+            this.switchPlayer();
+            this.updateCurrentPlayerDisplay();
+        }
+    }
+
+    getLowestEmptyRow(col) {
+        for (let row = 0; row < this.rows; row++) {
+            if (this.board[row][col] === '') return row;
+        }
+        return -1;
+    }
+
+    makeMove(row, col) {
+        this.board[row][col] = this.currentPlayer;
+    }
+
+    updateBoard() {
+        const cells = document.querySelectorAll('.game-cell');
+        cells.forEach(cell => {
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            const value = this.board[row][col];
+
+            cell.classList.remove('red', 'blue', 'winning');
+            if (value === 'red') cell.classList.add('red');
+            if (value === 'blue') cell.classList.add('blue');
         });
     }
 
-    /**
-     * Render using Canvas
-     * @param {CanvasRenderingContext2D} ctx - Canvas context
-     */
-    renderCanvas(ctx) {
-        const canvas = ctx.canvas;
-        const width = canvas.width;
-        const height = canvas.height;
-        const cellSize = Math.min(width / this.cols, height / this.rows) * 0.9;
-        const offsetX = (width - cellSize * this.cols) / 2;
-        const offsetY = (height - cellSize * this.rows) / 2;
-        const pieceRadius = cellSize * 0.4;
+    checkWin(row, col) {
+        const player = this.board[row][col];
+        if (!player) return false;
+        return (
+            this.checkDirection(row, col, 0, 1, player) ||
+            this.checkDirection(row, col, 1, 0, player) ||
+            this.checkDirection(row, col, 1, 1, player) ||
+            this.checkDirection(row, col, 1, -1, player)
+        );
+    }
 
-        // Clear canvas
-        ctx.clearRect(0, 0, width, height);
+    checkDirection(row, col, rowDir, colDir, player) {
+        let count = 1;
 
-        // Draw board background
-        ctx.fillStyle = '#2563eb';
-        ctx.beginPath();
-        ctx.roundRect(offsetX - 10, offsetY - 10, cellSize * this.cols + 20, cellSize * this.rows + 20, 10);
-        ctx.fill();
+        for (let i = 1; i < 4; i++) {
+            const newRow = row + i * rowDir;
+            const newCol = col + i * colDir;
+            if (newRow < 0 || newRow >= this.rows || newCol < 0 || newCol >= this.cols) break;
+            if (this.board[newRow][newCol] !== player) break;
+            count++;
+        }
 
-        // Draw cells and pieces
-        for (let row = 0; row < this.rows; row++) {
-            for (let col = 0; col < this.cols; col++) {
-                const centerX = offsetX + col * cellSize + cellSize / 2;
-                const centerY = offsetY + row * cellSize + cellSize / 2;
-                const cell = this.state.board[row][col];
-                const isWinning = this.state.winningCells?.some(([r, c]) => r === row && c === col);
+        for (let i = 1; i < 4; i++) {
+            const newRow = row - i * rowDir;
+            const newCol = col - i * colDir;
+            if (newRow < 0 || newRow >= this.rows || newCol < 0 || newCol >= this.cols) break;
+            if (this.board[newRow][newCol] !== player) break;
+            count++;
+        }
 
-                // Draw hole
-                ctx.fillStyle = '#1e40af';
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, pieceRadius + 2, 0, Math.PI * 2);
-                ctx.fill();
+        if (count >= 4) {
+            this.highlightWinningCells(row, col, rowDir, colDir, player);
+            return true;
+        }
+        return false;
+    }
 
-                // Draw piece or empty hole
-                if (cell === null) {
-                    ctx.fillStyle = '#f9fafb';
-                } else if (cell === 1) {
-                    ctx.fillStyle = isWinning ? '#10b981' : '#dc2626';
-                } else {
-                    ctx.fillStyle = isWinning ? '#10b981' : '#eab308';
+    highlightWinningCells(row, col, rowDir, colDir, player) {
+        for (let i = -3; i <= 3; i++) {
+            const newRow = row + i * rowDir;
+            const newCol = col + i * colDir;
+            if (newRow >= 0 && newRow < this.rows && newCol >= 0 && newCol < this.cols) {
+                if (this.board[newRow][newCol] === player) {
+                    const cell = document.querySelector(`[data-row="${newRow}"][data-col="${newCol}"]`);
+                    if (cell) cell.classList.add('winning');
                 }
-
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, pieceRadius, 0, Math.PI * 2);
-                ctx.fill();
             }
         }
     }
 
-    /**
-     * Handle click input
-     * @param {number} x - X coordinate
-     * @param {number} y - Y coordinate
-     * @param {Object} canvasInfo - Canvas dimensions
-     * @returns {Object|null} Move data
-     */
-    handleInput(x, y, canvasInfo = { width: 600, height: 600 }) {
-        const cellSize = Math.min(canvasInfo.width / this.cols, canvasInfo.height / this.rows) * 0.9;
-        const offsetX = (canvasInfo.width - cellSize * this.cols) / 2;
-
-        const col = Math.floor((x - offsetX) / cellSize);
-
-        if (col >= 0 && col < this.cols && this.state.board[0][col] === null) {
-            return {
-                column: col,
-                player: this.currentPlayer,
-                isWinningMove: this.isWinningMove({ column: col }),
-                isBlockingMove: this.isBlockingMove({ column: col })
-            };
+    checkDraw() {
+        for (let col = 0; col < this.cols; col++) {
+            if (this.board[this.rows - 1][col] === '') return false;
         }
-
-        return null;
+        return true;
     }
 
-    /**
-     * Get game metadata
-     * @returns {Object} Game metadata
-     */
-    getMetadata() {
-        return {
-            id: 'fourinrow',
-            name: 'Four in a Row',
-            players: 2,
-            description: 'Drop pieces to connect four in any direction.'
-        };
+    endGame(result) {
+        this.gameActive = false;
+        this.updateStats(result);
+        this.showGameStatus(result);
+    }
+
+    showGameStatus(result) {
+        const gameStatus = document.getElementById('gameStatus');
+        const statusMessage = document.getElementById('statusMessage');
+        if (result === 'win') {
+            const winnerName = this.currentPlayer === 'red' ? this.player1Name : this.player2Name;
+            statusMessage.textContent = `🎉 ${winnerName} Wins! 🎉`;
+            statusMessage.style.color = '#e74c3c';
+        } else {
+            statusMessage.textContent = "🤝 It's a Draw! 🤝";
+            statusMessage.style.color = '#7f8c8d';
+        }
+        gameStatus.classList.remove('hidden');
+    }
+
+    hideGameStatus() {
+        document.getElementById('gameStatus').classList.add('hidden');
+    }
+
+    switchPlayer() {
+        this.currentPlayer = this.currentPlayer === 'red' ? 'blue' : 'red';
+    }
+
+    updateCurrentPlayerDisplay() {
+        const currentPlayerName = document.getElementById('currentPlayerName');
+        const currentPlayerToken = document.getElementById('currentPlayerToken');
+        if (this.currentPlayer === 'red') {
+            currentPlayerName.textContent = this.player1Name;
+            currentPlayerToken.className = 'player-token red';
+        } else {
+            currentPlayerName.textContent = this.player2Name;
+            currentPlayerToken.className = 'player-token blue';
+        }
+    }
+
+    resetGame() {
+        this.board = Array(this.rows).fill().map(() => Array(this.cols).fill(''));
+        this.currentPlayer = 'red';
+        this.gameActive = true;
+        this.updateBoard();
+        this.hideGameStatus();
+        this.updateCurrentPlayerDisplay();
+    }
+
+    updateStats(result) {
+        this.gameStats.gamesPlayed++;
+        if (result === 'win') {
+            if (this.currentPlayer === 'red') this.gameStats.player1Wins++;
+            else this.gameStats.player2Wins++;
+        } else {
+            this.gameStats.draws++;
+        }
+        this.displayStats();
+        this.saveStats();
+    }
+
+    displayStats() {
+        document.getElementById('gamesPlayed').textContent = this.gameStats.gamesPlayed;
+        document.getElementById('player1Wins').textContent = this.gameStats.player1Wins;
+        document.getElementById('player2Wins').textContent = this.gameStats.player2Wins;
+        document.getElementById('draws').textContent = this.gameStats.draws;
+    }
+
+    saveStats() {
+        localStorage.setItem('fourInARowStats', JSON.stringify(this.gameStats));
+    }
+
+    loadStats() {
+        const savedStats = localStorage.getItem('fourInARowStats');
+        if (savedStats) {
+            this.gameStats = JSON.parse(savedStats);
+            this.displayStats();
+        }
+    }
+
+    addEntranceAnimation() {
+        const cells = document.querySelectorAll('.game-cell');
+        cells.forEach((cell, index) => {
+            cell.style.opacity = '0';
+            cell.style.transform = 'scale(0.5)';
+            cell.style.transition = 'all 0.5s ease';
+            setTimeout(() => {
+                cell.style.opacity = '1';
+                cell.style.transform = 'scale(1)';
+            }, index * 20);
+        });
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => new FourInARow());
