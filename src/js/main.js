@@ -166,6 +166,7 @@ class GameSuiteApp {
         
         // Game events
         this.eventBus.on('game:select', (gameId) => this.startGame(gameId));
+        this.eventBus.on('game:start', (data) => this.handleGameStart(data));
         this.eventBus.on('game:move', (data) => this.handleGameMove(data));
         this.eventBus.on('game:end', (result) => this.handleGameEnd(result));
         this.eventBus.on('game:restart', () => this.restartGame());
@@ -313,6 +314,39 @@ class GameSuiteApp {
     }
 
     /**
+     * Handle game start
+     * @param {Object} data - Game start data
+     */
+    handleGameStart(data) {
+        // Render the game board
+        this.renderGame();
+    }
+
+    /**
+     * Render the current game
+     */
+    renderGame() {
+        const game = this.gameController.currentGame;
+        if (!game) return;
+        
+        const canvas = document.getElementById('game-canvas');
+        const boardElement = document.getElementById('game-board');
+        
+        // Clear both rendering targets
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        if (boardElement) {
+            boardElement.innerHTML = '';
+        }
+        
+        // Render the game
+        const ctx = canvas?.getContext('2d');
+        game.render(ctx, boardElement);
+    }
+
+    /**
      * Handle a game move
      * @param {Object} data - Move data
      */
@@ -322,6 +356,9 @@ class GameSuiteApp {
         
         // Process move in game controller
         this.gameController.processMove(data);
+        
+        // Re-render the game
+        this.renderGame();
     }
 
     /**
@@ -365,6 +402,7 @@ class GameSuiteApp {
         if (currentGame) {
             this.gameController.restart();
             this.featureExtractor.startSession(currentGame);
+            this.renderGame();
         }
     }
 
