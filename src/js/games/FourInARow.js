@@ -1,5 +1,6 @@
-class FourInARow {
-    constructor() {
+export class FourInARow {
+    constructor(eventBus) {
+        this.eventBus = eventBus;
         this.rows = 6;
         this.cols = 7;
         this.board = [];
@@ -8,7 +9,9 @@ class FourInARow {
         this.player1Name = 'Player 1';
         this.player2Name = 'Player 2';
         this.gameStats = { gamesPlayed: 0, player1Wins: 0, player2Wins: 0, draws: 0 };
+    }
 
+    async init() {
         this.initializeGame();
         this.loadStats();
     }

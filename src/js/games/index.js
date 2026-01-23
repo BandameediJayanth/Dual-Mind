@@ -8,10 +8,10 @@ export { FourInARow } from './FourInARow.js';
 export { DotsAndBoxes } from './DotsAndBoxes.js';
 export { MemoryMatch } from './MemoryMatch.js';
 export { WordChain } from './WordChain.js';
-export { Game24 } from './Game24.js';
-export { MiniSudoku } from './MiniSudoku.js';
 export { Ludo } from './Ludo.js';
-export { Reversi } from './Reversi.js';
+export { SnakeAndLadders } from './SnakeAndLadders.js';
+export { ColorWars } from './ColorWars.js';
+export { SeaWars } from './SeaWars.js';
 export { BaseGame } from './BaseGame.js';
 
 /**
@@ -24,10 +24,10 @@ export const GameRegistry = {
     dotsandboxes: () => import('./DotsAndBoxes.js').then(m => m.DotsAndBoxes),
     memorymatch: () => import('./MemoryMatch.js').then(m => m.MemoryMatch),
     wordchain: () => import('./WordChain.js').then(m => m.WordChain),
-    game24: () => import('./Game24.js').then(m => m.Game24),
-    minisudoku: () => import('./MiniSudoku.js').then(m => m.MiniSudoku),
     ludo: () => import('./Ludo.js').then(m => m.Ludo),
-    reversi: () => import('./Reversi.js').then(m => m.Reversi)
+    snakeandladders: () => import('./SnakeAndLadders.js').then(m => m.SnakeAndLadders),
+    colorwars: () => import('./ColorWars.js').then(m => m.ColorWars),
+    seawars: () => import('./SeaWars.js').then(m => m.SeaWars)
 };
 
 /**
@@ -107,26 +107,6 @@ export function getAllGameMetadata() {
             skills: ['vocabulary', 'quick-thinking']
         },
         {
-            id: 'game24',
-            name: 'Game 24',
-            category: 'math',
-            players: { min: 1, max: 2 },
-            difficulty: 'hard',
-            description: 'Use math operations to make 24 from four numbers.',
-            icon: '🔢',
-            skills: ['arithmetic', 'problem-solving']
-        },
-        {
-            id: 'minisudoku',
-            name: 'Mini Sudoku',
-            category: 'puzzle',
-            players: { min: 1, max: 1 },
-            difficulty: 'medium',
-            description: 'Fill the 4x4 grid with numbers 1-4.',
-            icon: '🧩',
-            skills: ['logic', 'pattern-recognition']
-        },
-        {
             id: 'ludo',
             name: 'Ludo',
             category: 'race',
@@ -137,14 +117,34 @@ export function getAllGameMetadata() {
             skills: ['probability', 'decision-making']
         },
         {
-            id: 'reversi',
-            name: 'Reversi',
+            id: 'snakeandladders',
+            name: 'Snake and Ladders',
+            category: 'race',
+            players: { min: 2, max: 2 },
+            difficulty: 'easy',
+            description: 'Climb ladders and dodge snakes to reach 100.',
+            icon: '🪜',
+            skills: ['probability', 'risk-management']
+        },
+        {
+            id: 'colorwars',
+            name: 'Color Wars',
             category: 'strategy',
             players: { min: 2, max: 2 },
-            difficulty: 'hard',
-            description: 'Flip opponent pieces by sandwiching them.',
-            icon: '⚫',
-            skills: ['planning', 'spatial-reasoning']
+            difficulty: 'medium',
+            description: 'Expand territory with chain reactions.',
+            icon: '🟥',
+            skills: ['planning', 'area-control']
+        },
+        {
+            id: 'seawars',
+            name: 'Sea Wars',
+            category: 'strategy',
+            players: { min: 2, max: 2 },
+            difficulty: 'easy',
+            description: 'Place ships and take turns firing shots.',
+            icon: '🚢',
+            skills: ['deduction', 'probability']
         }
     ];
 }

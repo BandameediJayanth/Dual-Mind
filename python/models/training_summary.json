@@ -1,0 +1,13 @@
+{
+  "training_date": "2026-01-22T18:23:05.034753",
+  "model_type": "random_forest",
+  "n_samples": 1000,
+  "skill_predictor": {
+    "test_accuracy": 0.975,
+    "cv_score": 0.966
+  },
+  "performance_estimator": {
+    "test_r2": 0.8710635687137454,
+    "test_rmse": 7.694426087061545
+  }
+}

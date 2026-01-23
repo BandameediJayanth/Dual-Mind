@@ -1,10 +1,13 @@
-class TicTacToe {
-    constructor() {
+export class TicTacToe {
+    constructor(eventBus) {
+        this.eventBus = eventBus;
         this.board = Array(9).fill('');
         this.currentPlayer = 'X';
         this.gameActive = true;
         this.scores = { X: 0, O: 0 };
-        
+    }
+
+    async init() {
         this.initializeGame();
     }
 

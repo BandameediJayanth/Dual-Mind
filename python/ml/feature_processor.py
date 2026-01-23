@@ -77,7 +77,9 @@ class FeatureProcessor:
             
         # Calculate statistics for each feature
         for feature_name in self.FEATURE_DEFINITIONS.keys():
-            values = [d.get(feature_name) for d in training_data if d.get(feature_name) is not None]
+            raw_values = [d.get(feature_name) for d in training_data if d.get(feature_name) is not None]
+            # Keep only numeric inputs to satisfy numpy expectations and type checkers
+            values = [float(v) for v in raw_values if isinstance(v, (int, float))]
             
             if values:
                 self.scaler_params[feature_name] = {

@@ -3,12 +3,12 @@ Performance Estimator - Estimates player performance index using Random Forest /
 """
 
 import numpy as np
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, TYPE_CHECKING, cast
 import pickle
 import json
 import os
 
-# ML Libraries
+# ML Libraries (lazy/optional)
 try:
     from sklearn.ensemble import RandomForestRegressor
     from sklearn.model_selection import train_test_split, cross_val_score
@@ -16,12 +16,14 @@ try:
     SKLEARN_AVAILABLE = True
 except ImportError:
     SKLEARN_AVAILABLE = False
+    def _missing_lib(*args, **kwargs):
+        raise ImportError("scikit-learn is required. Install with: pip install scikit-learn")
+    RandomForestRegressor = Any  # type: ignore
+    train_test_split = cross_val_score = mean_squared_error = mean_absolute_error = r2_score = _missing_lib
 
-try:
-    import xgboost as xgb
-    XGBOOST_AVAILABLE = True
-except ImportError:
-    XGBOOST_AVAILABLE = False
+# Avoid hard dependency on xgboost unless requested
+XGBOOST_AVAILABLE = False
+xgb = None
 
 from .feature_processor import FeatureProcessor
 
@@ -51,8 +53,22 @@ class PerformanceEstimator:
         """Validate that required ML libraries are available."""
         if self.model_type == 'random_forest' and not SKLEARN_AVAILABLE:
             raise ImportError("scikit-learn is required. Install with: pip install scikit-learn")
-        if self.model_type == 'xgboost' and not XGBOOST_AVAILABLE:
-            raise ImportError("XGBoost is required. Install with: pip install xgboost")
+        if self.model_type == 'xgboost':
+            self._ensure_xgboost()
+            if not XGBOOST_AVAILABLE:
+                raise ImportError("XGBoost is required. Install with: pip install xgboost")
+
+    def _ensure_xgboost(self) -> None:
+        """Lazy import xgboost when needed."""
+        global xgb, XGBOOST_AVAILABLE
+        if XGBOOST_AVAILABLE and xgb is not None:
+            return
+        try:
+            import xgboost as _xgb  # type: ignore
+            xgb = _xgb
+            XGBOOST_AVAILABLE = True
+        except ImportError:
+            XGBOOST_AVAILABLE = False
     
     def train(self, training_data: List[Dict], scores: List[float],
               **hyperparams) -> Dict[str, Any]:
@@ -84,7 +100,7 @@ class PerformanceEstimator:
         y = np.array(scores)
         
         # Split data
-        X_train, X_test, y_train, y_test = train_test_split(
+        X_train, X_test, y_train, y_test = cast(Any, train_test_split)(
             X, y, test_size=0.2, random_state=42
         )
         
@@ -102,13 +118,13 @@ class PerformanceEstimator:
         y_test_pred = self.model.predict(X_test)
         
         # Metrics
-        train_r2 = r2_score(y_train, y_train_pred)
-        test_r2 = r2_score(y_test, y_test_pred)
-        test_mse = mean_squared_error(y_test, y_test_pred)
-        test_mae = mean_absolute_error(y_test, y_test_pred)
+        train_r2 = cast(Any, r2_score)(y_train, y_train_pred)
+        test_r2 = cast(Any, r2_score)(y_test, y_test_pred)
+        test_mse = cast(Any, mean_squared_error)(y_test, y_test_pred)
+        test_mae = cast(Any, mean_absolute_error)(y_test, y_test_pred)
         
         # Cross-validation
-        cv_scores = cross_val_score(self.model, X, y, cv=5, scoring='r2')
+        cv_scores = cast(Any, cross_val_score)(self.model, X, y, cv=5, scoring='r2')
         
         # Feature importance
         if hasattr(self.model, 'feature_importances_'):
@@ -135,7 +151,7 @@ class PerformanceEstimator:
         
         return self.training_metadata
     
-    def _create_random_forest(self, **params) -> 'RandomForestRegressor':
+    def _create_random_forest(self, **params) -> Any:
         """Create Random Forest regressor with given parameters."""
         default_params = {
             'n_estimators': 100,
@@ -146,10 +162,13 @@ class PerformanceEstimator:
             'n_jobs': -1
         }
         default_params.update(params)
-        return RandomForestRegressor(**default_params)
+        return cast(Any, RandomForestRegressor)(**default_params)
     
-    def _create_xgboost(self, **params) -> 'xgb.XGBRegressor':
+    def _create_xgboost(self, **params) -> Any:
         """Create XGBoost regressor with given parameters."""
+        self._ensure_xgboost()
+        if xgb is None:
+            raise ImportError("XGBoost is required. Install with: pip install xgboost")
         default_params = {
             'n_estimators': 100,
             'max_depth': 6,
@@ -159,7 +178,7 @@ class PerformanceEstimator:
             'n_jobs': -1
         }
         default_params.update(params)
-        return xgb.XGBRegressor(**default_params)
+        return cast(Any, xgb.XGBRegressor)(**default_params)
     
     def predict(self, features: Dict) -> Dict[str, Any]:
         """
@@ -178,6 +197,8 @@ class PerformanceEstimator:
         X = self.feature_processor.transform(features, feature_set='performance').reshape(1, -1)
         
         # Predict
+        if self.model is None:
+            raise RuntimeError("Model not trained. Call train() first or load a trained model.")
         score = float(self.model.predict(X)[0])
         
         # Clamp to valid range

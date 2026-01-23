@@ -1,5 +1,6 @@
-class ColorWars {
-    constructor() {
+export class ColorWars {
+    constructor(eventBus) {
+        this.eventBus = eventBus;
         this.grid = [];
         this.currentPlayer = 1; // 1 = Red, 2 = Blue
         this.gameStarted = false;
@@ -10,6 +11,10 @@ class ColorWars {
         this.expansionDepth = 0; // Track expansion depth to prevent infinite loops
         this.maxExpansionDepth = 10; // Maximum chain reaction depth
 
+        this.initializeGame();
+    }
+
+    async init() {
         this.initializeGame();
     }
 

@@ -3,12 +3,12 @@ Skill Predictor - Predicts player skill tier using Random Forest / XGBoost
 """
 
 import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any, TYPE_CHECKING, cast
 import pickle
 import json
 import os
 
-# ML Libraries
+# ML Libraries (lazy/optional)
 try:
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.model_selection import train_test_split, cross_val_score
@@ -16,12 +16,14 @@ try:
     SKLEARN_AVAILABLE = True
 except ImportError:
     SKLEARN_AVAILABLE = False
+    def _missing_lib(*args, **kwargs):
+        raise ImportError("scikit-learn is required. Install with: pip install scikit-learn")
+    RandomForestClassifier = Any  # type: ignore
+    train_test_split = cross_val_score = classification_report = confusion_matrix = _missing_lib
 
-try:
-    import xgboost as xgb
-    XGBOOST_AVAILABLE = True
-except ImportError:
-    XGBOOST_AVAILABLE = False
+# Avoid hard dependency on xgboost unless requested
+XGBOOST_AVAILABLE = False
+xgb = None
 
 from .feature_processor import FeatureProcessor
 
@@ -60,8 +62,22 @@ class SkillPredictor:
         """Validate that required ML libraries are available."""
         if self.model_type == 'random_forest' and not SKLEARN_AVAILABLE:
             raise ImportError("scikit-learn is required for Random Forest. Install with: pip install scikit-learn")
-        if self.model_type == 'xgboost' and not XGBOOST_AVAILABLE:
-            raise ImportError("XGBoost is required. Install with: pip install xgboost")
+        if self.model_type == 'xgboost':
+            self._ensure_xgboost()
+            if not XGBOOST_AVAILABLE:
+                raise ImportError("XGBoost is required. Install with: pip install xgboost")
+
+    def _ensure_xgboost(self) -> None:
+        """Lazy import xgboost when needed."""
+        global xgb, XGBOOST_AVAILABLE
+        if XGBOOST_AVAILABLE and xgb is not None:
+            return
+        try:
+            import xgboost as _xgb  # type: ignore
+            xgb = _xgb
+            XGBOOST_AVAILABLE = True
+        except ImportError:
+            XGBOOST_AVAILABLE = False
     
     def train(self, training_data: List[Dict], labels: List[int], 
               **hyperparams) -> Dict[str, Any]:
@@ -93,7 +109,7 @@ class SkillPredictor:
         y = np.array(labels)
         
         # Split data
-        X_train, X_test, y_train, y_test = train_test_split(
+        X_train, X_test, y_train, y_test = cast(Any, train_test_split)(
             X, y, test_size=0.2, random_state=42, stratify=y
         )
         
@@ -113,7 +129,7 @@ class SkillPredictor:
         y_pred = self.model.predict(X_test)
         
         # Cross-validation
-        cv_scores = cross_val_score(self.model, X, y, cv=5)
+        cv_scores = cast(Any, cross_val_score)(self.model, X, y, cv=5)
         
         # Feature importance
         if hasattr(self.model, 'feature_importances_'):
@@ -133,14 +149,14 @@ class SkillPredictor:
             'cv_mean': float(cv_scores.mean()),
             'cv_std': float(cv_scores.std()),
             'feature_importances': importances,
-            'classification_report': classification_report(y_test, y_pred, 
-                                                           target_names=self.SKILL_TIERS,
-                                                           output_dict=True)
+            'classification_report': cast(Any, classification_report)(y_test, y_pred, 
+                                                                      target_names=self.SKILL_TIERS,
+                                                                      output_dict=True)
         }
         
         return self.training_metadata
     
-    def _create_random_forest(self, **params) -> 'RandomForestClassifier':
+    def _create_random_forest(self, **params) -> Any:
         """Create Random Forest classifier with given parameters."""
         default_params = {
             'n_estimators': 100,
@@ -151,10 +167,13 @@ class SkillPredictor:
             'n_jobs': -1
         }
         default_params.update(params)
-        return RandomForestClassifier(**default_params)
+        return cast(Any, RandomForestClassifier)(**default_params)
     
-    def _create_xgboost(self, **params) -> 'xgb.XGBClassifier':
+    def _create_xgboost(self, **params) -> Any:
         """Create XGBoost classifier with given parameters."""
+        self._ensure_xgboost()
+        if xgb is None:
+            raise ImportError("XGBoost is required. Install with: pip install xgboost")
         default_params = {
             'n_estimators': 100,
             'max_depth': 6,
@@ -166,7 +185,7 @@ class SkillPredictor:
             'eval_metric': 'mlogloss'
         }
         default_params.update(params)
-        return xgb.XGBClassifier(**default_params)
+        return cast(Any, xgb.XGBClassifier)(**default_params)
     
     def predict(self, features: Dict) -> Dict[str, Any]:
         """
@@ -185,6 +204,8 @@ class SkillPredictor:
         X = self.feature_processor.transform(features, feature_set='skill').reshape(1, -1)
         
         # Predict
+        if self.model is None:
+            raise RuntimeError("Model not trained. Call train() first or load a trained model.")
         tier_idx = int(self.model.predict(X)[0])
         
         # Get probabilities

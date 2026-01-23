@@ -1,5 +1,6 @@
-class MemoryGame {
-    constructor() {
+export class MemoryMatch {
+    constructor(eventBus) {
+        this.eventBus = eventBus;
         this.cards = [];
         this.flippedCards = [];
         this.matchedPairs = 0;
@@ -8,6 +9,9 @@ class MemoryGame {
         this.gameStarted = false;
         
         this.symbols = ['💎', '❤', '🍏', '🫑', '🪷', '🎄', '😀', '⏳', '🎮', '🎳', '🎯', '🎲'];
+    }
+
+    async init() {
         this.initializeGame();
     }
 
