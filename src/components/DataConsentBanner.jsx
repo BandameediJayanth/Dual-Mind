@@ -35,9 +35,14 @@ export default function DataConsentBanner() {
               <strong>Data Collection Notice:</strong> We collect anonymous gameplay data (moves, times, results) to improve our Machine Learning models. No personal identifiers are logged.
             </p>
           </div>
-          <button className="btn-consent" onClick={handleAccept}>
-            Got it
-          </button>
+          <div className="consent-actions">
+            <button className="btn-consent" onClick={handleAccept}>
+              Got it
+            </button>
+            <button className="btn-close-consent" onClick={() => setIsVisible(false)} aria-label="Close">
+              ✖
+            </button>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

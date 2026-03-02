@@ -43,6 +43,7 @@ export default function GameView({ gameId, onBack }) {
   const [gameResult, setGameResult] = useState(null);
   const [mlPrediction, setMlPrediction] = useState(null);
   const [mlLoading, setMlLoading] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
 
   // ML hooks from context
   const { startSession, recordMove, endSessionAndPredict, mlStatus } = useML();
@@ -88,6 +89,7 @@ export default function GameView({ gameId, onBack }) {
     eventBus.on('game:end', async (data) => {
       console.log('🏆 Game ended:', data);
       setGameResult(data);
+      setShowResultModal(true);
 
       // Run ML prediction pipeline
       setMlLoading(true);
@@ -132,6 +134,7 @@ export default function GameView({ gameId, onBack }) {
   const handlePlayAgain = () => {
     setGameResult(null);
     setMlPrediction(null);
+    setShowResultModal(false);
 
     // Restart ML session
     startSession(gameId);
@@ -146,6 +149,7 @@ export default function GameView({ gameId, onBack }) {
   const handleQuit = () => {
     setGameResult(null);
     setMlPrediction(null);
+    setShowResultModal(false);
     onBack();
   };
 
@@ -179,7 +183,7 @@ export default function GameView({ gameId, onBack }) {
 
       {/* ============ GAME RESULT MODAL ============ */}
       <AnimatePresence>
-        {gameResult && (
+        {gameResult && showResultModal && (
           <motion.div
             className="result-overlay"
             initial={{ opacity: 0 }}
@@ -193,6 +197,7 @@ export default function GameView({ gameId, onBack }) {
               exit={{ opacity: 0, scale: 0.85, y: 30 }}
               transition={{ type: 'spring', damping: 20, stiffness: 300 }}
             >
+              <button className="btn-close-modal" onClick={() => setShowResultModal(false)} aria-label="Close">✖</button>
               <div className="result-icon">
                 {gameResult.result === 'win' ? '🏆' : '🤝'}
               </div>
@@ -210,27 +215,54 @@ export default function GameView({ gameId, onBack }) {
                 </div>
               )}
 
-              {mlPrediction && (
-                <div className="ml-prediction-card">
-                  <div className="ml-tier-badge" style={{ '--tier-color': TIER_COLORS[mlPrediction.skillTier] || '#3b82f6' }}>
-                    <span className="tier-label">Skill Tier</span>
-                    <span className="tier-value">{mlPrediction.skillTier}</span>
-                    <span className="tier-confidence">{Math.round(mlPrediction.confidence * 100)}% confidence</span>
-                  </div>
-                  <div className="ml-perf-bar">
-                    <span className="perf-label">Performance Index</span>
-                    <div className="perf-bar-track">
-                      <motion.div
-                        className="perf-bar-fill"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${mlPrediction.performanceIndex}%` }}
-                        transition={{ duration: 1, ease: 'easeOut' }}
-                      />
+              {mlPrediction && mlPrediction.p1 && (
+                <div className="ml-predictions-wrapper">
+                  <div className={`ml-prediction-card ${mlPrediction.p2 ? 'dual' : ''}`}>
+                    {mlPrediction.p2 && <h3 className="player-profile-title">Player 1</h3>}
+                    <div className="ml-tier-badge" style={{ '--tier-color': TIER_COLORS[mlPrediction.p1.skillTier] || '#3b82f6' }}>
+                      <span className="tier-label">Skill Tier</span>
+                      <span className="tier-value">{mlPrediction.p1.skillTier}</span>
+                      <span className="tier-confidence">{Math.round(mlPrediction.p1.confidence * 100)}% conf.</span>
                     </div>
-                    <span className="perf-value">{Math.round(mlPrediction.performanceIndex)}/100</span>
+                    <div className="ml-perf-bar">
+                      <span className="perf-label">Performance Index</span>
+                      <div className="perf-bar-track">
+                        <motion.div
+                          className="perf-bar-fill"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${mlPrediction.p1.performanceIndex}%` }}
+                          transition={{ duration: 1, ease: 'easeOut' }}
+                        />
+                      </div>
+                      <span className="perf-value">{Math.round(mlPrediction.p1.performanceIndex)}/100</span>
+                    </div>
                   </div>
+
+                  {mlPrediction.p2 && (
+                    <div className="ml-prediction-card dual">
+                      <h3 className="player-profile-title">Player 2</h3>
+                      <div className="ml-tier-badge" style={{ '--tier-color': TIER_COLORS[mlPrediction.p2.skillTier] || '#3b82f6' }}>
+                        <span className="tier-label">Skill Tier</span>
+                        <span className="tier-value">{mlPrediction.p2.skillTier}</span>
+                        <span className="tier-confidence">{Math.round(mlPrediction.p2.confidence * 100)}% conf.</span>
+                      </div>
+                      <div className="ml-perf-bar">
+                        <span className="perf-label">Performance Index</span>
+                        <div className="perf-bar-track">
+                          <motion.div
+                            className="perf-bar-fill"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${mlPrediction.p2.performanceIndex}%` }}
+                            transition={{ duration: 1, ease: 'easeOut' }}
+                          />
+                        </div>
+                        <span className="perf-value">{Math.round(mlPrediction.p2.performanceIndex)}/100</span>
+                      </div>
+                    </div>
+                  )}
+                  
                   <p className="ml-source">
-                    {mlPrediction.source === 'python_ml' ? '🤖 ML Model' : '📐 Rule-based'}
+                    {mlPrediction.p1.source === 'python_ml' ? '🤖 ML Model' : '📐 Rule-based'}
                   </p>
                 </div>
               )}

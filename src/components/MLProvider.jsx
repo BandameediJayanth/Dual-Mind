@@ -117,62 +117,80 @@ export function MLProvider({ children }) {
 
     if (!extractor || !client) return null;
 
-    // Extract features from the game session
-    const features = extractor.endSession();
-    if (!features) return null;
+    // Extract features from the game session for both players
+    const extractedFeatures = extractor.endSession(gameResult);
+    if (!extractedFeatures || !extractedFeatures.p1) return null;
 
     try {
-      // Get ML predictions (parallel)
-      const [skillResult, perfResult] = await Promise.all([
-        client.predictSkillTier(features),
-        client.estimatePerformance(features),
+      // Get ML predictions (parallel) for p1
+      const p1Promise = Promise.all([
+        client.predictSkillTier(extractedFeatures.p1),
+        client.estimatePerformance(extractedFeatures.p1),
       ]);
+      
+      // Get ML predictions for p2 if it exists
+      const p2Promise = extractedFeatures.p2 ? Promise.all([
+        client.predictSkillTier(extractedFeatures.p2),
+        client.estimatePerformance(extractedFeatures.p2),
+      ]) : Promise.resolve([null, null]);
 
-      const prediction = {
+      const [[p1Skill, p1Perf], [p2Skill, p2Perf]] = await Promise.all([p1Promise, p2Promise]);
+
+      const formatPrediction = (skillResult, perfResult, features) => ({
         skillTier: skillResult.skillTier || skillResult.skill_tier || 'Unknown',
         confidence: skillResult.confidence || 0.6,
         performanceIndex: perfResult.performanceIndex || perfResult.performance_index || 50,
         explanation: skillResult.explanation || '',
         source: skillResult.source || 'fallback',
         features, // raw features for analytics
+      });
+
+      const prediction = {
+        p1: formatPrediction(p1Skill, p1Perf, extractedFeatures.p1)
       };
+
+      if (extractedFeatures.p2) {
+        prediction.p2 = formatPrediction(p2Skill, p2Perf, extractedFeatures.p2);
+      }
 
       // Log Session to Supabase
       dataLogger.logSessionAsync({
-        id: features.sessionId,
-        game_id: features.gameId,
+        id: extractedFeatures.p1.sessionId,
+        game_id: extractedFeatures.p1.gameId,
         result: gameResult?.result || 'unknown',
-        total_moves: features.totalMoves,
-        session_duration_ms: features.sessionDuration,
-        features: features
+        total_moves: extractedFeatures.p1.totalMoves + (extractedFeatures.p2 ? extractedFeatures.p2.totalMoves : 0),
+        session_duration_ms: extractedFeatures.p1.sessionDuration,
+        features: extractedFeatures
       });
 
-      // Log Prediction to Supabase
-      dataLogger.logPredictionAsync(features.sessionId, {
-        skill_tier: prediction.skillTier,
-        confidence: prediction.confidence,
-        performance_index: prediction.performanceIndex,
-        model_type: prediction.source,
+      // Log Prediction to Supabase (P1)
+      dataLogger.logPredictionAsync(extractedFeatures.p1.sessionId, {
+        skill_tier: prediction.p1.skillTier,
+        confidence: prediction.p1.confidence,
+        performance_index: prediction.p1.performanceIndex,
+        model_type: prediction.p1.source,
         features_hash: typeof crypto !== 'undefined' ? crypto.randomUUID() : 'unknown'
       });
+      // Skip P2 logging to simple predictions table for now to avoid duplicate session ID clashes 
+      // unless we had a multi-row log map, but this is fine for fallback metrics.
 
-      // Save to session history
+      // Save to session history (using p1 as the primary logged profile)
       saveSession({
-        gameId: features.gameId,
+        gameId: extractedFeatures.p1.gameId,
         result: gameResult?.result || 'unknown',
-        skillTier: prediction.skillTier,
-        performanceIndex: prediction.performanceIndex,
+        skillTier: prediction.p1.skillTier,
+        performanceIndex: prediction.p1.performanceIndex,
         features: {
-          moveAccuracy: features.moveAccuracy,
-          avgDecisionTime: features.avgDecisionTime,
-          totalMoves: features.totalMoves,
-          sessionDuration: features.sessionDuration,
+          moveAccuracy: extractedFeatures.p1.moveAccuracy,
+          avgDecisionTime: extractedFeatures.p1.avgDecisionTime,
+          totalMoves: extractedFeatures.p1.totalMoves,
+          sessionDuration: extractedFeatures.p1.sessionDuration,
         },
       });
 
       setMlStatus(prev => ({
         ...prev,
-        lastPrediction: prediction,
+        lastPrediction: prediction.p1, // keeps backward compat for top-level status
       }));
 
       return prediction;

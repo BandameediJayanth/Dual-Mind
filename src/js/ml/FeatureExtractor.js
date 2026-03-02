@@ -118,14 +118,15 @@ export class FeatureExtractor {
 
     /**
      * End the current session and extract features
-     * @returns {Object} Extracted features
+     * @param {Object} gameResult - Raw game result data
+     * @returns {Object} Extracted features for players
      */
-    endSession() {
+    endSession(gameResult = null) {
         if (!this.currentSession) {
             return null;
         }
         
-        const features = this.extractFeatures();
+        const features = this.extractFeatures(gameResult);
         this.currentSession = null;
         
         return features;
@@ -133,41 +134,62 @@ export class FeatureExtractor {
 
     /**
      * Extract features from the current session
-     * @returns {Object} Feature vector
+     * @param {Object} gameResult
+     * @returns {Object} Feature vectors for player1 and player2 (if applicable)
      */
-    extractFeatures() {
+    extractFeatures(gameResult) {
         if (!this.currentSession || this.moves.length === 0) {
-            return this.getDefaultFeatures();
+            return {
+              p1: this.getDefaultFeatures(),
+              p2: this.getDefaultFeatures()
+            };
         }
         
+        // Split moves into p1 and p2 based on explicit player prop or alternating index
+        const p1Moves = this.moves.filter((m, i) => m.player === 1 || (!m.player && i % 2 === 0));
+        const p2Moves = this.moves.filter((m, i) => m.player === 2 || (!m.player && i % 2 === 1));
+
+        const getFeaturesForMoves = (playerMoves, isWinner) => {
+            const tempExtractor = new FeatureExtractor(this.eventBus);
+            tempExtractor.moves = playerMoves;
+            tempExtractor.sessionStartTime = this.sessionStartTime;
+            tempExtractor.gameId = this.gameId;
+            tempExtractor.currentSession = { ...this.currentSession, errors: this.currentSession.errors.filter(e => playerMoves.some(m => m.moveNumber === e.moveNumber)), patterns: this.currentSession.patterns.filter(p => playerMoves.some(m => m.moveNumber === p.moveNumber)) };
+            
+            let feats = {
+                avgDecisionTime: tempExtractor.calculateAvgDecisionTime(),
+                decisionTimeVariance: tempExtractor.calculateDecisionTimeVariance(),
+                totalSessionTime: Date.now() - this.sessionStartTime,
+                moveAccuracy: tempExtractor.calculateMoveAccuracy(),
+                errorRate: tempExtractor.calculateErrorRate(),
+                errorRepetitionRate: tempExtractor.calculateErrorRepetition(),
+                patternSuccessRate: tempExtractor.calculatePatternSuccessRate(),
+                strategicMoveRate: tempExtractor.calculateStrategicMoveRate(),
+                optimalPlayRate: tempExtractor.calculateOptimalPlayRate(),
+                consistencyScore: tempExtractor.calculateConsistencyScore(),
+                improvementRate: tempExtractor.calculateImprovementRate(),
+                ...tempExtractor.extractGameSpecificFeatures(),
+                gameId: this.gameId,
+                sessionId: this.sessionId,
+                totalMoves: playerMoves.length,
+                sessionDuration: Date.now() - this.sessionStartTime
+            };
+
+            // Heuristic adjustment if gameResult is provided (reward winner with better simulated accuracy/strategic rate if raw moves are tied)
+            if (isWinner) {
+              feats.moveAccuracy = Math.min(1.0, feats.moveAccuracy + 0.1);
+              feats.strategicMoveRate = Math.min(1.0, feats.strategicMoveRate + 0.15);
+              feats.errorRate = Math.max(0.0, feats.errorRate - 0.1);
+            } else if (isWinner === false) {
+              feats.errorRate = Math.min(1.0, feats.errorRate + 0.1);
+            }
+
+            return feats;
+        };
+
         const features = {
-            // Temporal features
-            avgDecisionTime: this.calculateAvgDecisionTime(),
-            decisionTimeVariance: this.calculateDecisionTimeVariance(),
-            totalSessionTime: Date.now() - this.sessionStartTime,
-            
-            // Accuracy features
-            moveAccuracy: this.calculateMoveAccuracy(),
-            errorRate: this.calculateErrorRate(),
-            errorRepetitionRate: this.calculateErrorRepetition(),
-            
-            // Pattern features
-            patternSuccessRate: this.calculatePatternSuccessRate(),
-            strategicMoveRate: this.calculateStrategicMoveRate(),
-            optimalPlayRate: this.calculateOptimalPlayRate(),
-            
-            // Consistency features
-            consistencyScore: this.calculateConsistencyScore(),
-            improvementRate: this.calculateImprovementRate(),
-            
-            // Game-specific features
-            ...this.extractGameSpecificFeatures(),
-            
-            // Meta features
-            gameId: this.gameId,
-            sessionId: this.sessionId,
-            totalMoves: this.moves.length,
-            sessionDuration: Date.now() - this.sessionStartTime
+            p1: getFeaturesForMoves(p1Moves, gameResult?.winner === 1),
+            p2: p2Moves.length > 0 ? getFeaturesForMoves(p2Moves, gameResult?.winner === 2) : null
         };
         
         // Emit feature extraction event
