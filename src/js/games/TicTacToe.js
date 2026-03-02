@@ -57,8 +57,9 @@ export class TicTacToe {
           )
           .join("")}
       </div>
-
-
+      <div class="ttt-game-controls">
+        <button id="ttt-reset-game" class="ttt-btn ttt-btn-secondary">New Game</button>
+      </div>
     `;
 
     targetElement.appendChild(container);
