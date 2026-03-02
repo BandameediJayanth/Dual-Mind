@@ -8,6 +8,7 @@ const navLinks = [
   { id: 'home', label: 'Home', icon: '🏠' },
   { id: 'games', label: 'Games', icon: '🎮' },
   { id: 'analytics', label: 'Analytics', icon: '📊' },
+  { id: 'leaderboards', label: 'Leaderboards', icon: '🏆' },
   { id: 'settings', label: 'Settings', icon: '⚙️' },
 ];
 

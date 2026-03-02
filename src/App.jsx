@@ -6,6 +6,7 @@ import GameShowcase from './components/GameShowcase';
 import GameView from './components/GameView';
 import AnalyticsPreview from './components/AnalyticsPreview';
 import Settings from './components/Settings';
+import Leaderboards from './components/Leaderboards';
 import Footer from './components/Footer';
 import PageLoader from './components/PageLoader';
 import Particles from './components/Particles';
@@ -97,6 +98,18 @@ export default function App() {
               transition={pageTransition}
             >
               <AnalyticsPreview />
+            </motion.div>
+          )}
+          {currentView === 'leaderboards' && (
+            <motion.div
+              key="leaderboards"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={pageTransition}
+            >
+              <Leaderboards />
             </motion.div>
           )}
           {currentView === 'settings' && (
