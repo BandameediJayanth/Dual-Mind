@@ -1,16 +1,24 @@
 .cursor-main {
   position: fixed;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   pointer-events: none;
   z-index: 10000;
-  transform: translate(-4px, -4px); /* Offset pointer tip slightly */
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease;
   will-change: transform, left, top;
 }
 
-.cursor-hovering {
-  filter: drop-shadow(0 0 15px var(--color-primary-glow)) drop-shadow(0 0 30px var(--color-secondary));
+.cursor-offset {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 100%;
+  height: 100%;
+  transition: filter 0.2s ease;
+}
+
+.cursor-hovering .cursor-offset {
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.8)) drop-shadow(0 0 24px rgba(124, 58, 237, 0.6));
 }
 
 @media (hover: none) and (pointer: coarse) {
