@@ -1,18 +1,16 @@
 .cursor-main {
   position: fixed;
-  width: 24px;
-  height: 24px;
-  background: var(--color-primary);
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
   pointer-events: none;
   z-index: 10000;
-  transform: translate(-50%, -50%);
-  /* Sleek modern glow and blend mode */
-  mix-blend-mode: color-dodge;
-  filter: blur(2px);
-  box-shadow: 0 0 15px var(--color-primary-glow), 0 0 30px var(--color-secondary);
-  transition: opacity 0.3s ease;
+  transform: translate(-4px, -4px); /* Offset pointer tip slightly */
+  transition: opacity 0.2s ease, transform 0.2s ease;
   will-change: transform, left, top;
+}
+
+.cursor-hovering {
+  filter: drop-shadow(0 0 15px var(--color-primary-glow)) drop-shadow(0 0 30px var(--color-secondary));
 }
 
 @media (hover: none) and (pointer: coarse) {

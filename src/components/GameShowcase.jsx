@@ -50,10 +50,19 @@ export default function GameShowcase({ onGameSelect }) {
               className="game-card-item glass-card"
               variants={cardAnim}
               whileHover={{
-                y: -8,
-                transition: { duration: 0.3, ease: 'easeOut' },
+                y: -6,
+                scale: 1.02,
+                rotateX: 2,
+                rotateY: -2,
+                transition: { duration: 0.2, ease: 'easeOut' },
               }}
-              style={{ '--card-accent': game.color, cursor: 'pointer' }}
+              whileTap={{
+                scale: 0.98,
+                rotateX: 0,
+                rotateY: 0,
+                transition: { duration: 0.1 },
+              }}
+              style={{ '--card-accent': game.color, cursor: 'pointer', perspective: '1000px' }}
               onClick={() => onGameSelect && onGameSelect(game.id)}
             >
               <div className="card-icon-wrap">

@@ -20,7 +20,9 @@
 /* Split gradient background — blue left, purple right */
 .hero-split-bg {
   position: absolute;
-  inset: 0;
+  inset: -10%; /* Overflow slightly to allow panning */
+  width: 120%;
+  height: 120%;
   background: linear-gradient(
     135deg,
     var(--hero-bg-left) 0%,
@@ -29,6 +31,12 @@
     var(--hero-bg-right) 100%
   );
   z-index: 0;
+  animation: bgPan 18s ease-in-out infinite alternate;
+}
+
+@keyframes bgPan {
+  0% { transform: translate(0%, 0%); }
+  100% { transform: translate(-3%, -3%); }
 }
 
 /* Neural lines */
@@ -151,7 +159,7 @@
   border-radius: 14px;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow:
     0 4px 24px var(--color-primary-glow),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -165,20 +173,21 @@
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-primary));
   z-index: -1;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .btn-glow:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 8px 40px var(--color-primary-glow);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 40px var(--color-primary-glow), 0 0 20px rgba(124, 58, 237, 0.5);
 }
 
-.btn-glow:hover::before {
-  opacity: 1;
+.btn-glow:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 2px 10px var(--color-primary-glow);
 }
 
 .btn-glow-arrow {
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .btn-glow:hover .btn-glow-arrow {
@@ -202,14 +211,20 @@
   border: 1px solid var(--border-glow);
   border-radius: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-outline-hover:hover {
   color: var(--text-bright);
   background: var(--cell-hover-bg);
-  border-color: var(--border-glow);
+  border-color: var(--color-primary);
   transform: translateY(-2px);
+  box-shadow: 0 4px 20px var(--color-primary-glow);
+}
+
+.btn-outline-hover:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 /* ---- RIGHT SIDE: Brain Graphic ---- */
