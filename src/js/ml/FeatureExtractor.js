@@ -1,7 +1,4 @@
-/**
- * FeatureExtractor - Gameplay Feature Extraction
- * Extracts cognitive performance features from gameplay sessions
- */
+import { dataLogger } from '../data/DataLogger';
 
 export class FeatureExtractor {
     constructor(eventBus) {
@@ -20,6 +17,7 @@ export class FeatureExtractor {
      * @param {string} gameId - Game identifier
      */
     startSession(gameId) {
+        this.sessionId = crypto.randomUUID();
         this.currentSession = {
             gameId,
             startTime: Date.now(),
@@ -34,7 +32,7 @@ export class FeatureExtractor {
         this.sessionStartTime = Date.now();
         this.gameId = gameId;
         
-        console.log(`📊 Feature extraction started for ${gameId}`);
+        console.log(`📊 Feature extraction started for ${gameId} (Session: ${this.sessionId})`);
     }
 
     /**
@@ -56,6 +54,15 @@ export class FeatureExtractor {
             moveNumber: this.moves.length + 1
         };
         
+        // Log move to Supabase
+        dataLogger.logMoveAsync(this.sessionId, {
+            move_index: enrichedMove.moveNumber,
+            decision_time_ms: enrichedMove.decisionTime,
+            move_data: moveData,
+            is_optimal: enrichedMove.isOptimal || false,
+            is_error: enrichedMove.isError || moveData.valid === false || false
+        });
+
         this.moves.push(enrichedMove);
         this.timestamps.push(timestamp);
         this.currentSession.moves.push(enrichedMove);
@@ -158,6 +165,7 @@ export class FeatureExtractor {
             
             // Meta features
             gameId: this.gameId,
+            sessionId: this.sessionId,
             totalMoves: this.moves.length,
             sessionDuration: Date.now() - this.sessionStartTime
         };

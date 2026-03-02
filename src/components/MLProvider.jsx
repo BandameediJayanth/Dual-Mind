@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { MLClient } from '../js/ml/MLClient';
 import { FeatureExtractor } from '../js/ml/FeatureExtractor';
+import { dataLogger } from '../js/data/DataLogger';
 
 /**
  * MLProvider — React Context for ML Integration
@@ -135,6 +136,25 @@ export function MLProvider({ children }) {
         source: skillResult.source || 'fallback',
         features, // raw features for analytics
       };
+
+      // Log Session to Supabase
+      dataLogger.logSessionAsync({
+        id: features.sessionId,
+        game_id: features.gameId,
+        result: gameResult?.result || 'unknown',
+        total_moves: features.totalMoves,
+        session_duration_ms: features.sessionDuration,
+        features: features
+      });
+
+      // Log Prediction to Supabase
+      dataLogger.logPredictionAsync(features.sessionId, {
+        skill_tier: prediction.skillTier,
+        confidence: prediction.confidence,
+        performance_index: prediction.performanceIndex,
+        model_type: prediction.source,
+        features_hash: typeof crypto !== 'undefined' ? crypto.randomUUID() : 'unknown'
+      });
 
       // Save to session history
       saveSession({

@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import CursorFollower from './components/CursorFollower';
 import PageLoader from './components/PageLoader';
 import Particles from './components/Particles';
+import DataConsentBanner from './components/DataConsentBanner';
 import { MLProvider } from './components/MLProvider';
 import './styles/global.css';
 
@@ -51,6 +52,7 @@ export default function App() {
       <Particles />
       <Navbar currentView={currentView} onNavigate={handleNavigate} />
       <main className="main-content">
+        <DataConsentBanner />
         <AnimatePresence mode="wait">
           {currentView === 'home' && (
             <motion.div

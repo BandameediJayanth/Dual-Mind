@@ -1,0 +1,70 @@
+.consent-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) !important; 
+  /* Framer motion overrides transform, but we need horizontal centering.
+     We will handle X centering via left/margin or flex container. */
+  width: 90%;
+  max-width: 600px;
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 9999;
+}
+
+/* Framer motion X-centering fix */
+.consent-banner {
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  transform: none; /* Let framer motion handle Y, we handle X via margin */
+}
+
+.consent-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.consent-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.consent-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.consent-content strong {
+  color: var(--text-primary);
+}
+
+.btn-consent {
+  white-space: nowrap;
+  padding: 8px 16px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-consent:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
