@@ -1,28 +1,22 @@
-.cursor-dot {
-  position: fixed;
-  width: 5px;
-  height: 5px;
-  background: var(--color-secondary);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 10000;
-  transform: translate(-50%, -50%);
-}
-
-.cursor-ring {
+.cursor-main {
   position: fixed;
   width: 24px;
   height: 24px;
-  border: 1.5px solid rgba(124, 58, 237, 0.5);
+  background: var(--color-primary);
   border-radius: 50%;
   pointer-events: none;
   z-index: 10000;
   transform: translate(-50%, -50%);
-  opacity: 0.4;
+  /* Sleek modern glow and blend mode */
+  mix-blend-mode: color-dodge;
+  filter: blur(2px);
+  box-shadow: 0 0 15px var(--color-primary-glow), 0 0 30px var(--color-secondary);
+  transition: opacity 0.3s ease;
+  will-change: transform, left, top;
 }
 
-@media (hover: none) {
-  .cursor-dot, .cursor-ring {
-    display: none;
+@media (hover: none) and (pointer: coarse) {
+  .cursor-main {
+    display: none !important;
   }
 }
