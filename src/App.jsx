@@ -7,7 +7,6 @@ import GameView from './components/GameView';
 import AnalyticsPreview from './components/AnalyticsPreview';
 import Settings from './components/Settings';
 import Footer from './components/Footer';
-import CursorFollower from './components/CursorFollower';
 import PageLoader from './components/PageLoader';
 import Particles from './components/Particles';
 import DataConsentBanner from './components/DataConsentBanner';
@@ -48,7 +47,6 @@ export default function App() {
     <MLProvider>
     <div className="app">
       {!loaded && <PageLoader onComplete={() => setLoaded(true)} />}
-      <CursorFollower />
       <Particles />
       <Navbar currentView={currentView} onNavigate={handleNavigate} />
       <main className="main-content">

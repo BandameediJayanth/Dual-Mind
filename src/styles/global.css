@@ -138,10 +138,26 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
+  cursor: url('/cursor.svg') 12 8, auto;
 }
 
-@media (hover: hover) {
-  *, *::before, *::after { cursor: none !important; }
+button,
+a,
+[role="button"],
+.game-card-item,
+.glass-card,
+.nav-link,
+.nav-cta,
+.btn-primary,
+.btn-ghost,
+.fiar-cell,
+.ttt-cell {
+  cursor: url('/cursor.svg') 12 8, pointer;
+}
+
+input,
+textarea {
+  cursor: text;
 }
 
 .app {
