@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useML } from './MLProvider';
+import CognitiveCard from './CognitiveCard';
 
 // Import original vanilla JS game engines
 import { TicTacToe } from '../js/games/TicTacToe';
@@ -16,7 +17,7 @@ import { SnakeAndLadders } from '../js/games/SnakeAndLadders';
 import './GameView.css';
 
 const GAME_MAP = {
-  tictactoe:      { Engine: TicTacToe,      name: 'Tic Tac Toe',      icon: '❌' },
+  tictactoe:      { Engine: TicTacToe,       name: 'Tic Tac Toe',      icon: '❌' },
   fourinarow:     { Engine: FourInARow,      name: 'Four in a Row',    icon: '🔴' },
   checkers:       { Engine: Checkers,        name: 'Checkers',         icon: '♟️' },
   dotsandboxes:   { Engine: DotsAndBoxes,    name: 'Dots & Boxes',     icon: '🔲' },
@@ -217,53 +218,10 @@ export default function GameView({ gameId, onBack }) {
 
               {mlPrediction && mlPrediction.p1 && (
                 <div className="ml-predictions-wrapper">
-                  <div className={`ml-prediction-card ${mlPrediction.p2 ? 'dual' : ''}`}>
-                    {mlPrediction.p2 && <h3 className="player-profile-title">Player 1</h3>}
-                    <div className="ml-tier-badge" style={{ '--tier-color': TIER_COLORS[mlPrediction.p1.skillTier] || '#3b82f6' }}>
-                      <span className="tier-label">Skill Tier</span>
-                      <span className="tier-value">{mlPrediction.p1.skillTier}</span>
-                      <span className="tier-confidence">{Math.round(mlPrediction.p1.confidence * 100)}% conf.</span>
-                    </div>
-                    <div className="ml-perf-bar">
-                      <span className="perf-label">Performance Index</span>
-                      <div className="perf-bar-track">
-                        <motion.div
-                          className="perf-bar-fill"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${mlPrediction.p1.performanceIndex}%` }}
-                          transition={{ duration: 1, ease: 'easeOut' }}
-                        />
-                      </div>
-                      <span className="perf-value">{Math.round(mlPrediction.p1.performanceIndex)}/100</span>
-                    </div>
-                  </div>
-
+                  <CognitiveCard prediction={mlPrediction.p1} playerName={mlPrediction.p2 ? "Player 1" : "Player"} />
                   {mlPrediction.p2 && (
-                    <div className="ml-prediction-card dual">
-                      <h3 className="player-profile-title">Player 2</h3>
-                      <div className="ml-tier-badge" style={{ '--tier-color': TIER_COLORS[mlPrediction.p2.skillTier] || '#3b82f6' }}>
-                        <span className="tier-label">Skill Tier</span>
-                        <span className="tier-value">{mlPrediction.p2.skillTier}</span>
-                        <span className="tier-confidence">{Math.round(mlPrediction.p2.confidence * 100)}% conf.</span>
-                      </div>
-                      <div className="ml-perf-bar">
-                        <span className="perf-label">Performance Index</span>
-                        <div className="perf-bar-track">
-                          <motion.div
-                            className="perf-bar-fill"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${mlPrediction.p2.performanceIndex}%` }}
-                            transition={{ duration: 1, ease: 'easeOut' }}
-                          />
-                        </div>
-                        <span className="perf-value">{Math.round(mlPrediction.p2.performanceIndex)}/100</span>
-                      </div>
-                    </div>
+                    <CognitiveCard prediction={mlPrediction.p2} playerName="Player 2" />
                   )}
-                  
-                  <p className="ml-source">
-                    {mlPrediction.p1.source === 'python_ml' ? '🤖 ML Model' : '📐 Rule-based'}
-                  </p>
                 </div>
               )}
 
