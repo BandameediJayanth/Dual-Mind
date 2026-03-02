@@ -1,243 +1,263 @@
+/**
+ * FourInARow - Integrated from my_games/fourinarow
+ * Drop pieces to connect four in any direction
+ */
 export class FourInARow {
     constructor(eventBus) {
         this.eventBus = eventBus;
+        this.boardElement = null;
+        this.sessionStartTime = null;
+        this.moveCount = 0;
+        // Internal game state
         this.rows = 6;
         this.cols = 7;
         this.board = [];
         this.currentPlayer = 'red';
         this.gameActive = true;
-        this.player1Name = 'Player 1';
-        this.player2Name = 'Player 2';
-        this.gameStats = { gamesPlayed: 0, player1Wins: 0, player2Wins: 0, draws: 0 };
+        this.scores = { red: 0, blue: 0 };
     }
 
     async init() {
-        this.initializeGame();
-        this.loadStats();
+        this.sessionStartTime = Date.now();
+        this.moveCount = 0;
+        this.board = Array(this.rows).fill(null).map(() => Array(this.cols).fill(''));
+        this.currentPlayer = 'red';
+        this.gameActive = true;
+        console.log('FourInARow initialized');
     }
 
-    initializeGame() {
-        this.setupEventListeners();
-        this.createBoard();
-        this.updateCurrentPlayerDisplay();
-        this.addEntranceAnimation();
+    render(ctx, boardElement) {
+        if (boardElement) this.boardElement = boardElement;
+        if (!this.boardElement) return;
+
+        // If wrapper exists, return
+        if (this.boardElement.querySelector('.fiar-wrapper')) return;
+
+        this.boardElement.innerHTML = '';
+        this._addStyles();
+
+        this.boardElement.innerHTML = `
+            <div class="fiar-wrapper">
+                <div class="fiar-header">
+                    <div class="fiar-player-info">
+                        <div class="fiar-token red"></div>
+                        <span>Player 1 (Red)</span>
+                        <span class="fiar-score" id="fiar-score-red">${this.scores.red}</span>
+                    </div>
+                    <div class="fiar-turn" id="fiar-turn">Red's Turn</div>
+                    <div class="fiar-player-info">
+                        <div class="fiar-token blue"></div>
+                        <span>Player 2 (Blue)</span>
+                        <span class="fiar-score" id="fiar-score-blue">${this.scores.blue}</span>
+                    </div>
+                </div>
+                <div class="fiar-board" id="fiar-board"></div>
+                <div class="fiar-controls">
+                    <button id="fiar-reset" class="fiar-btn">New Game</button>
+                </div>
+                <div class="fiar-status hidden" id="fiar-status"></div>
+            </div>
+        `;
+
+        this._buildBoard();
+        this._bindEvents();
     }
 
-    setupEventListeners() {
-        document.getElementById('resetButton').addEventListener('click', () => this.resetGame());
+    _addStyles() {
+        if (document.getElementById('fiar-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'fiar-styles';
+        style.textContent = `
+            .fiar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem; font-family: inherit; }
+            .fiar-header { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 500px; }
+            .fiar-player-info { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+            .fiar-token { width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.3); }
+            .fiar-token.red { background: radial-gradient(circle at 35% 35%, #ff6b6b, #c0392b); }
+            .fiar-token.blue { background: radial-gradient(circle at 35% 35%, #74b9ff, #2980b9); }
+            .fiar-score { background: #f0f0f0; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+            .fiar-turn { font-weight: 700; font-size: 1rem; }
+            .fiar-board { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; background: #2c3e50; padding: 12px; border-radius: 12px; width: min(500px, 95vw); }
+            .fiar-cell { aspect-ratio: 1; border-radius: 50%; background: #ecf0f1; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+            .fiar-cell:hover { background: #bdc3c7; }
+            .fiar-cell.red { background: radial-gradient(circle at 35% 35%, #ff6b6b, #c0392b); cursor: default; }
+            .fiar-cell.blue { background: radial-gradient(circle at 35% 35%, #74b9ff, #2980b9); cursor: default; }
+            .fiar-cell.winning { animation: fiar-pulse 0.6s infinite alternate; }
+            @keyframes fiar-pulse { from { box-shadow: 0 0 0 0 gold; } to { box-shadow: 0 0 0 6px gold; } }
+            .fiar-controls { display: flex; gap: 1rem; }
+            .fiar-btn { padding: 0.5rem 1.5rem; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: 600; cursor: pointer; font-family: inherit; }
+            .fiar-status { padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; font-size: 1.1rem; background: linear-gradient(135deg, #48bb78, #38a169); color: white; }
+            .fiar-status.hidden { display: none; }
+        `;
+        document.head.appendChild(style);
     }
 
-    createBoard() {
-        this.board = Array(this.rows).fill().map(() => Array(this.cols).fill(''));
-
-        const gameBoard = document.getElementById('gameBoard');
-        gameBoard.innerHTML = '';
-
-        // DOM shows top row first but board indexing still starts at row 0 (bottom)
+    _buildBoard() {
+        const boardEl = this.boardElement.querySelector('#fiar-board');
+        boardEl.innerHTML = '';
+        // Render top row first (visual top = row 5 in data)
         for (let row = this.rows - 1; row >= 0; row--) {
             for (let col = 0; col < this.cols; col++) {
                 const cell = document.createElement('div');
-                cell.className = 'game-cell';
+                cell.className = 'fiar-cell';
                 cell.dataset.row = row;
                 cell.dataset.col = col;
-                cell.addEventListener('click', () => this.handleCellClick(col));
-                gameBoard.appendChild(cell);
+                const val = this.board[row][col];
+                if (val) cell.classList.add(val);
+                boardEl.appendChild(cell);
             }
         }
     }
 
-    handleCellClick(col) {
-        if (!this.gameActive) return;
+    _bindEvents() {
+        const boardEl = this.boardElement.querySelector('#fiar-board');
+        boardEl.addEventListener('click', (e) => {
+            const cell = e.target.closest('.fiar-cell');
+            if (!cell || !this.gameActive) return;
+            const col = parseInt(cell.dataset.col);
+            this._handleColClick(col);
+        });
+        this.boardElement.querySelector('#fiar-reset').addEventListener('click', () => this._resetGame());
+    }
 
-        const row = this.getLowestEmptyRow(col);
+    _handleColClick(col) {
+        const row = this._getLowestEmptyRow(col);
         if (row === -1) return;
 
-        this.makeMove(row, col);
-        this.updateBoard();
+        this.board[row][col] = this.currentPlayer;
+        this.moveCount++;
 
-        if (this.checkWin(row, col)) {
-            this.endGame('win');
-        } else if (this.checkDraw()) {
-            this.endGame('draw');
+        if (this._checkWin(row, col)) {
+            this._updateBoard();
+            this._highlightWin(row, col);
+            this._endGame('win');
+        } else if (this._checkDraw()) {
+            this._updateBoard();
+            this._endGame('draw');
         } else {
-            this.switchPlayer();
-            this.updateCurrentPlayerDisplay();
+            this.currentPlayer = this.currentPlayer === 'red' ? 'blue' : 'red';
+            this._updateBoard();
+            this._updateTurn();
         }
     }
 
-    getLowestEmptyRow(col) {
+    _getLowestEmptyRow(col) {
         for (let row = 0; row < this.rows; row++) {
             if (this.board[row][col] === '') return row;
         }
         return -1;
     }
 
-    makeMove(row, col) {
-        this.board[row][col] = this.currentPlayer;
-    }
-
-    updateBoard() {
-        const cells = document.querySelectorAll('.game-cell');
+    _updateBoard() {
+        const cells = this.boardElement.querySelectorAll('.fiar-cell');
         cells.forEach(cell => {
             const row = parseInt(cell.dataset.row);
             const col = parseInt(cell.dataset.col);
-            const value = this.board[row][col];
-
-            cell.classList.remove('red', 'blue', 'winning');
-            if (value === 'red') cell.classList.add('red');
-            if (value === 'blue') cell.classList.add('blue');
+            cell.classList.remove('red', 'blue');
+            if (this.board[row][col]) cell.classList.add(this.board[row][col]);
         });
     }
 
-    checkWin(row, col) {
+    _updateTurn() {
+        const turnEl = this.boardElement.querySelector('#fiar-turn');
+        if (turnEl) turnEl.textContent = this.currentPlayer === 'red' ? "Red's Turn" : "Blue's Turn";
+    }
+
+    _checkWin(row, col) {
         const player = this.board[row][col];
-        if (!player) return false;
-        return (
-            this.checkDirection(row, col, 0, 1, player) ||
-            this.checkDirection(row, col, 1, 0, player) ||
-            this.checkDirection(row, col, 1, 1, player) ||
-            this.checkDirection(row, col, 1, -1, player)
-        );
+        return this._checkDir(row, col, 0, 1, player) ||
+               this._checkDir(row, col, 1, 0, player) ||
+               this._checkDir(row, col, 1, 1, player) ||
+               this._checkDir(row, col, 1, -1, player);
     }
 
-    checkDirection(row, col, rowDir, colDir, player) {
+    _checkDir(row, col, dr, dc, player) {
         let count = 1;
-
         for (let i = 1; i < 4; i++) {
-            const newRow = row + i * rowDir;
-            const newCol = col + i * colDir;
-            if (newRow < 0 || newRow >= this.rows || newCol < 0 || newCol >= this.cols) break;
-            if (this.board[newRow][newCol] !== player) break;
+            const r = row + i*dr, c = col + i*dc;
+            if (r < 0 || r >= this.rows || c < 0 || c >= this.cols || this.board[r][c] !== player) break;
             count++;
         }
-
         for (let i = 1; i < 4; i++) {
-            const newRow = row - i * rowDir;
-            const newCol = col - i * colDir;
-            if (newRow < 0 || newRow >= this.rows || newCol < 0 || newCol >= this.cols) break;
-            if (this.board[newRow][newCol] !== player) break;
+            const r = row - i*dr, c = col - i*dc;
+            if (r < 0 || r >= this.rows || c < 0 || c >= this.cols || this.board[r][c] !== player) break;
             count++;
         }
-
-        if (count >= 4) {
-            this.highlightWinningCells(row, col, rowDir, colDir, player);
-            return true;
-        }
-        return false;
+        return count >= 4;
     }
 
-    highlightWinningCells(row, col, rowDir, colDir, player) {
-        for (let i = -3; i <= 3; i++) {
-            const newRow = row + i * rowDir;
-            const newCol = col + i * colDir;
-            if (newRow >= 0 && newRow < this.rows && newCol >= 0 && newCol < this.cols) {
-                if (this.board[newRow][newCol] === player) {
-                    const cell = document.querySelector(`[data-row="${newRow}"][data-col="${newCol}"]`);
-                    if (cell) cell.classList.add('winning');
-                }
+    _highlightWin(row, col) {
+        const player = this.board[row][col];
+        const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+        for (const [dr, dc] of dirs) {
+            const cells = [[row, col]];
+            for (let i = 1; i < 4; i++) {
+                const r = row + i*dr, c = col + i*dc;
+                if (r >= 0 && r < this.rows && c >= 0 && c < this.cols && this.board[r][c] === player) cells.push([r, c]);
+            }
+            for (let i = 1; i < 4; i++) {
+                const r = row - i*dr, c = col - i*dc;
+                if (r >= 0 && r < this.rows && c >= 0 && c < this.cols && this.board[r][c] === player) cells.push([r, c]);
+            }
+            if (cells.length >= 4) {
+                cells.forEach(([r, c]) => {
+                    const el = this.boardElement.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                    if (el) el.classList.add('winning');
+                });
+                break;
             }
         }
     }
 
-    checkDraw() {
+    _checkDraw() {
         for (let col = 0; col < this.cols; col++) {
             if (this.board[this.rows - 1][col] === '') return false;
         }
         return true;
     }
 
-    endGame(result) {
+    _endGame(result) {
         this.gameActive = false;
-        this.updateStats(result);
-        this.showGameStatus(result);
-    }
-
-    showGameStatus(result) {
-        const gameStatus = document.getElementById('gameStatus');
-        const statusMessage = document.getElementById('statusMessage');
+        const winner = result === 'win' ? (this.currentPlayer === 'red' ? 1 : 2) : 'draw';
         if (result === 'win') {
-            const winnerName = this.currentPlayer === 'red' ? this.player1Name : this.player2Name;
-            statusMessage.textContent = `🎉 ${winnerName} Wins! 🎉`;
-            statusMessage.style.color = '#e74c3c';
-        } else {
-            statusMessage.textContent = "🤝 It's a Draw! 🤝";
-            statusMessage.style.color = '#7f8c8d';
+            this.scores[this.currentPlayer]++;
+            const scoreEl = this.boardElement.querySelector(`#fiar-score-${this.currentPlayer}`);
+            if (scoreEl) scoreEl.textContent = this.scores[this.currentPlayer];
         }
-        gameStatus.classList.remove('hidden');
-    }
 
-    hideGameStatus() {
-        document.getElementById('gameStatus').classList.add('hidden');
-    }
-
-    switchPlayer() {
-        this.currentPlayer = this.currentPlayer === 'red' ? 'blue' : 'red';
-    }
-
-    updateCurrentPlayerDisplay() {
-        const currentPlayerName = document.getElementById('currentPlayerName');
-        const currentPlayerToken = document.getElementById('currentPlayerToken');
-        if (this.currentPlayer === 'red') {
-            currentPlayerName.textContent = this.player1Name;
-            currentPlayerToken.className = 'player-token red';
-        } else {
-            currentPlayerName.textContent = this.player2Name;
-            currentPlayerToken.className = 'player-token blue';
+        const statusEl = this.boardElement.querySelector('#fiar-status');
+        if (statusEl) {
+            statusEl.textContent = result === 'win'
+                ? `🎉 ${this.currentPlayer === 'red' ? 'Red' : 'Blue'} Wins!`
+                : "🤝 It's a Draw!";
+            statusEl.classList.remove('hidden');
         }
-    }
 
-    resetGame() {
-        this.board = Array(this.rows).fill().map(() => Array(this.cols).fill(''));
-        this.currentPlayer = 'red';
-        this.gameActive = true;
-        this.updateBoard();
-        this.hideGameStatus();
-        this.updateCurrentPlayerDisplay();
-    }
-
-    updateStats(result) {
-        this.gameStats.gamesPlayed++;
-        if (result === 'win') {
-            if (this.currentPlayer === 'red') this.gameStats.player1Wins++;
-            else this.gameStats.player2Wins++;
-        } else {
-            this.gameStats.draws++;
-        }
-        this.displayStats();
-        this.saveStats();
-    }
-
-    displayStats() {
-        document.getElementById('gamesPlayed').textContent = this.gameStats.gamesPlayed;
-        document.getElementById('player1Wins').textContent = this.gameStats.player1Wins;
-        document.getElementById('player2Wins').textContent = this.gameStats.player2Wins;
-        document.getElementById('draws').textContent = this.gameStats.draws;
-    }
-
-    saveStats() {
-        localStorage.setItem('fourInARowStats', JSON.stringify(this.gameStats));
-    }
-
-    loadStats() {
-        const savedStats = localStorage.getItem('fourInARowStats');
-        if (savedStats) {
-            this.gameStats = JSON.parse(savedStats);
-            this.displayStats();
-        }
-    }
-
-    addEntranceAnimation() {
-        const cells = document.querySelectorAll('.game-cell');
-        cells.forEach((cell, index) => {
-            cell.style.opacity = '0';
-            cell.style.transform = 'scale(0.5)';
-            cell.style.transition = 'all 0.5s ease';
-            setTimeout(() => {
-                cell.style.opacity = '1';
-                cell.style.transform = 'scale(1)';
-            }, index * 20);
+        const duration = Date.now() - (this.sessionStartTime || Date.now());
+        this.eventBus?.emit('game:end', {
+            gameId: 'fourinrow',
+            winner,
+            winReason: result === 'win' ? `${this.currentPlayer} connected four!` : "Board is full",
+            moveCount: this.moveCount,
+            sessionDuration: duration,
+            scores: { 1: this.scores.red, 2: this.scores.blue }
         });
     }
-}
 
-document.addEventListener('DOMContentLoaded', () => new FourInARow());
+    _resetGame() {
+        this.board = Array(this.rows).fill(null).map(() => Array(this.cols).fill(''));
+        this.currentPlayer = 'red';
+        this.gameActive = true;
+        this.moveCount = 0;
+        this.sessionStartTime = Date.now();
+        this._buildBoard();
+        this._updateTurn();
+        const statusEl = this.boardElement.querySelector('#fiar-status');
+        if (statusEl) statusEl.classList.add('hidden');
+    }
+
+    getState() {
+        return { board: this.board, currentPlayer: this.currentPlayer === 'red' ? 1 : 2, gameActive: this.gameActive };
+    }
+    makeMove() { return { valid: false }; }
+    cleanup() { if (this.boardElement) this.boardElement.innerHTML = ''; }
+}

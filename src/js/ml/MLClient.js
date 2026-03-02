@@ -19,8 +19,8 @@ export class MLClient {
         this.isReady = false;
         this.pythonServiceAvailable = false;
         
-        // Python ML API endpoint (configurable)
-        this.apiEndpoint = 'http://localhost:5000/api/ml';
+        // Python ML API endpoint — uses Vite proxy in dev, direct URL in production
+        this.apiEndpoint = '/api/ml';
         
         // Request timeout
         this.requestTimeout = 5000;

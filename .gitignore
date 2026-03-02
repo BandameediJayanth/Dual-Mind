@@ -23,12 +23,12 @@ build/
 *.min.js
 *.min.css
 
-# Python ML
-*.pkl
-*.pickle
+# Python ML (keep .pkl models — they're small and needed)
 *.h5
 *.model
 .ipynb_checkpoints/
+python/venv/
+*.db
 
 # Logs
 *.log
@@ -45,3 +45,6 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+
+# System / Gemini
+.gemini/

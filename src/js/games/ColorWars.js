@@ -1,504 +1,333 @@
+/**
+ * ColorWars - Integrated from my_games/colorWars
+ * Territory control game with chain reactions
+ */
 export class ColorWars {
     constructor(eventBus) {
         this.eventBus = eventBus;
+        this.boardElement = null;
+        this.sessionStartTime = null;
+        this.moveCount = 0;
         this.grid = [];
-        this.currentPlayer = 1; // 1 = Red, 2 = Blue
+        this.currentPlayer = 1;
         this.gameStarted = false;
         this.gridSize = 8;
         this.playerScores = { 1: 0, 2: 0 };
         this.playerFirstMoves = { 1: false, 2: false };
         this.gameEnded = false;
-        this.expansionDepth = 0; // Track expansion depth to prevent infinite loops
-        this.maxExpansionDepth = 10; // Maximum chain reaction depth
-
-        this.initializeGame();
+        this.maxExpansionDepth = 10;
     }
 
     async init() {
-        this.initializeGame();
+        this.sessionStartTime = Date.now();
+        this.moveCount = 0;
+        this.gameEnded = false;
+        this.currentPlayer = 1;
+        this.playerScores = { 1: 0, 2: 0 };
+        this.playerFirstMoves = { 1: false, 2: false };
+        this._initializeGrid();
+        console.log('ColorWars initialized');
     }
 
-    initializeGame() {
-        this.createGameBoard();
-        this.bindEvents();
-        this.initializeGrid();
-        this.updateDisplay();
+    render(ctx, boardElement) {
+        if (boardElement) this.boardElement = boardElement;
+        if (!this.boardElement) return;
+
+        // If wrapper exists, just update display and return
+        if (this.boardElement.querySelector('.cw-wrapper')) {
+            this._updateDisplay();
+            return;
+        }
+
+        this.boardElement.innerHTML = '';
+        this._addStyles();
+
+        this.boardElement.innerHTML = `
+            <div class="cw-wrapper">
+                <div class="cw-header">
+                    <div class="cw-player cw-p1 active" id="cw-p1">
+                        <span>🔴 Red</span>
+                        <span class="cw-score" id="cw-score-1">0</span>
+                    </div>
+                    <div class="cw-turn" id="cw-turn">Red: Place 3 dots anywhere!</div>
+                    <div class="cw-player cw-p2" id="cw-p2">
+                        <span>🔵 Blue</span>
+                        <span class="cw-score" id="cw-score-2">0</span>
+                    </div>
+                </div>
+                <div class="cw-board" id="cw-board"></div>
+                <div class="cw-controls">
+                    <button id="cw-new-game" class="cw-btn">New Game</button>
+                    <button id="cw-reset" class="cw-btn cw-btn-secondary">Reset</button>
+                </div>
+                <div class="cw-status" id="cw-status"></div>
+            </div>
+        `;
+
+        this._setupDOMListeners();
     }
 
-    createGameBoard() {
-        const gameBoard = document.getElementById('game-board');
-        if (!gameBoard) return;
-        gameBoard.innerHTML = '';
+    _addStyles() {
+        if (document.getElementById('cw-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'cw-styles';
+        style.textContent = `
+            .cw-wrapper { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem; font-family: inherit; }
+            .cw-header { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 500px; }
+            .cw-player { display: flex; flex-direction: column; align-items: center; padding: 0.75rem 1.25rem; border-radius: 12px; background: #f0f0f0; transition: all 0.3s; opacity: 0.6; }
+            .cw-player.active { opacity: 1; transform: scale(1.05); }
+            .cw-p1.active { background: linear-gradient(135deg, #ff6b6b, #c0392b); color: white; }
+            .cw-p2.active { background: linear-gradient(135deg, #74b9ff, #2980b9); color: white; }
+            .cw-score { font-size: 1.5rem; font-weight: 700; }
+            .cw-turn { font-weight: 600; font-size: 0.85rem; text-align: center; max-width: 160px; }
+            .cw-board { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; width: min(480px, 90vw); }
+            .cw-cell { aspect-ratio: 1; border-radius: 6px; background: #e2e8f0; cursor: pointer; transition: all 0.2s; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px; padding: 3px; position: relative; }
+            .cw-cell.red { background: linear-gradient(135deg, #ff6b6b, #c0392b); }
+            .cw-cell.blue { background: linear-gradient(135deg, #74b9ff, #2980b9); }
+            .cw-cell.clickable-red { cursor: pointer; outline: 2px solid rgba(192,57,43,0.5); }
+            .cw-cell.clickable-blue { cursor: pointer; outline: 2px solid rgba(41,128,185,0.5); }
+            .cw-cell.not-clickable { cursor: not-allowed; opacity: 0.7; }
+            .cw-cell.expanding { animation: cw-expand 0.6s ease; }
+            @keyframes cw-expand { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+            .cw-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.8); }
+            .cw-controls { display: flex; gap: 1rem; }
+            .cw-btn { padding: 0.5rem 1.5rem; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: 600; cursor: pointer; font-family: inherit; }
+            .cw-btn-secondary { background: #e2e8f0; color: #4a5568; }
+            .cw-status { font-weight: 600; min-height: 1.5rem; text-align: center; color: #4a5568; }
+        `;
+        document.head.appendChild(style);
+    }
 
-        // Create grid cells and attach click handlers
+    _setupDOMListeners() {
+        const boardEl = this.boardElement.querySelector('#cw-board');
+        const newGameBtn = this.boardElement.querySelector('#cw-new-game');
+        const resetBtn = this.boardElement.querySelector('#cw-reset');
+
+        newGameBtn.addEventListener('click', () => {
+             this._initializeGrid();
+             this._updateDisplay();
+        });
+        resetBtn.addEventListener('click', () => {
+             this._initializeGrid();
+             this._updateDisplay();
+        });
+
+        // Build cells
         for (let row = 0; row < this.gridSize; row++) {
             for (let col = 0; col < this.gridSize; col++) {
                 const cell = document.createElement('div');
-                cell.className = 'grid-cell';
+                cell.className = 'cw-cell';
                 cell.dataset.row = row;
                 cell.dataset.col = col;
-
-                // Click event uses row/col captured in closure
-                cell.addEventListener('click', () => {
-                    this.handleCellClick(row, col);
-                });
-
-                gameBoard.appendChild(cell);
+                cell.addEventListener('click', () => this._handleCellClick(row, col));
+                boardEl.appendChild(cell);
             }
         }
+
+        this._updateDisplay();
     }
 
-    initializeGrid() {
-        // Create a grid object for every cell (owner: null means empty)
+    _initializeGrid() {
         this.grid = Array(this.gridSize).fill(null).map(() =>
-            Array(this.gridSize).fill(null).map(() => ({
-                owner: null,
-                dots: 0,
-                color: 'neutral'
-            }))
+            Array(this.gridSize).fill(null).map(() => ({ owner: null, dots: 0, color: 'neutral' }))
         );
-
         this.playerFirstMoves = { 1: false, 2: false };
         this.playerScores = { 1: 0, 2: 0 };
         this.gameEnded = false;
         this.currentPlayer = 1;
-        this.updateGridDisplay();
-        this.updateDisplay();
+        this.moveCount = 0;
+        this.sessionStartTime = Date.now();
     }
 
-    bindEvents() {
-        const newBtn = document.getElementById('new-game');
-        if (newBtn) newBtn.addEventListener('click', () => this.newGame());
-
-        const resetBtn = document.getElementById('reset-game');
-        if (resetBtn) resetBtn.addEventListener('click', () => this.resetGame());
-    }
-
-    handleCellClick(row, col) {
+    _handleCellClick(row, col) {
         if (this.gameEnded) return;
-
         const cell = this.grid[row][col];
-
-        // First move: place 3 dots anywhere (single click)
         if (!this.playerFirstMoves[this.currentPlayer]) {
-            this.placeFirstMove(row, col);
-            return;
-        }
-
-        // After first move: players can only add dots to their own color
-        if (cell && cell.owner === this.currentPlayer) {
-            this.placeDot(row, col);
+            this._placeFirstMove(row, col);
+        } else if (cell && cell.owner === this.currentPlayer) {
+            this._placeDot(row, col);
         } else {
-            // optional feedback: player clicked an invalid cell
-            this.showGameStatus('You can only add dots to your own color.', 'error');
-            setTimeout(() => this.clearGameStatus(), 700);
+            this._setStatus('You can only add dots to your own color.');
+            setTimeout(() => this._setStatus(''), 700);
         }
     }
 
-    placeFirstMove(row, col) {
-        // put 3 dots in the clicked cell in one go (like your original)
-        this.grid[row][col] = {
-            owner: this.currentPlayer,
-            dots: 3,
-            color: this.currentPlayer === 1 ? 'red' : 'blue'
-        };
-
+    _placeFirstMove(row, col) {
+        this.grid[row][col] = { owner: this.currentPlayer, dots: 3, color: this.currentPlayer === 1 ? 'red' : 'blue' };
         this.playerScores[this.currentPlayer] += 3;
         this.playerFirstMoves[this.currentPlayer] = true;
-        this.switchPlayer();
-        this.updateGridDisplay();
+        this.moveCount++;
+        this._switchPlayer();
+        this._updateGridDisplay();
     }
 
-    canSpreadToCell(row, col, player) {
-        // Check adjacency (used for move-possibility checks, not for clicking)
-        const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    _placeDot(row, col) {
+        const cell = this.grid[row][col];
+        if (!cell || cell.owner !== this.currentPlayer) return;
+        cell.dots++;
+        this.playerScores[this.currentPlayer]++;
+        this.moveCount++;
+        if (cell.dots >= 4) {
+            this._expandTerritory(row, col);
+            cell.dots = 1;
+        }
+        this._updateDisplay();
+        this._checkWinCondition();
+        this._switchPlayer();
+    }
+
+    _expandTerritory(row, col, depth = 0) {
+        if (depth > this.maxExpansionDepth) return;
+        const directions = [[-1,0],[1,0],[0,-1],[0,1]];
+        const currentPlayer = this.grid[row][col].owner;
+        const cellsToExpand = [];
 
         for (const [dr, dc] of directions) {
-            const newRow = row + dr;
-            const newCol = col + dc;
+            const nr = row + dr, nc = col + dc;
+            if (nr < 0 || nr >= this.gridSize || nc < 0 || nc >= this.gridSize) continue;
+            const target = this.grid[nr][nc];
+            if (!target || target.owner === null) {
+                this.grid[nr][nc] = { owner: currentPlayer, dots: 1, color: currentPlayer === 1 ? 'red' : 'blue' };
+                this.playerScores[currentPlayer]++;
+            } else if (target.owner !== currentPlayer) {
+                this.playerScores[target.owner] -= target.dots;
+                const total = target.dots + 1;
+                target.owner = currentPlayer; target.dots = total; target.color = currentPlayer === 1 ? 'red' : 'blue';
+                this.playerScores[currentPlayer] += total;
+                if (total === 4 && depth < this.maxExpansionDepth) cellsToExpand.push([nr, nc]);
+            } else {
+                target.dots++;
+                this.playerScores[currentPlayer]++;
+                if (target.dots === 4 && depth < this.maxExpansionDepth) cellsToExpand.push([nr, nc]);
+            }
+        }
 
-            if (this.isValidPosition(newRow, newCol)) {
-                const adjacentCell = this.grid[newRow][newCol];
-                if (adjacentCell && adjacentCell.owner === player) {
-                    return true;
-                }
+        this._updateGridDisplay();
+        this._updateDisplay();
+
+        if (cellsToExpand.length > 0) {
+            setTimeout(() => {
+                for (const [er, ec] of cellsToExpand) this.grid[er][ec].dots = 1;
+                this._updateGridDisplay();
+                cellsToExpand.forEach(([er, ec], i) => {
+                    setTimeout(() => this._expandTerritory(er, ec, depth + 1), i * 300);
+                });
+            }, 500);
+        }
+    }
+
+    _checkWinCondition() {
+        let red = 0, blue = 0, empty = 0;
+        for (let r = 0; r < this.gridSize; r++) {
+            for (let c = 0; c < this.gridSize; c++) {
+                const cell = this.grid[r][c];
+                if (cell && cell.owner) { if (cell.owner === 1) red++; else blue++; }
+                else empty++;
+            }
+        }
+        const canRed = this._canPlayerMove(1), canBlue = this._canPlayerMove(2);
+        if (!canRed && !canBlue) {
+            if (red > blue) this._endGame(1);
+            else if (blue > red) this._endGame(2);
+            else this._endGame('tie');
+        } else if (!canRed && canBlue) this._endGame(2);
+        else if (!canBlue && canRed) this._endGame(1);
+        else if (empty === 0) {
+            if (red > blue) this._endGame(1);
+            else if (blue > red) this._endGame(2);
+            else this._endGame('tie');
+        }
+    }
+
+    _canPlayerMove(player) {
+        for (let r = 0; r < this.gridSize; r++) {
+            for (let c = 0; c < this.gridSize; c++) {
+                const cell = this.grid[r][c];
+                if (cell && cell.owner === player && cell.dots < 4) return true;
             }
         }
         return false;
     }
 
-    placeDot(row, col) {
-        const cell = this.grid[row][col];
-        if (!cell || cell.owner !== this.currentPlayer) return;
-
-        cell.dots++;
-        this.playerScores[this.currentPlayer]++;
-
-        // If dots reach 4 or more -> spread (capture) and then reset this cell to 1
-        if (cell.dots >= 4) {
-            this.expandTerritory(row, col);
-            cell.dots = 1; // reset after spreading (keeps at least 1)
-        }
-
-        this.updateDisplay();
-        this.checkWinCondition();
-        this.switchPlayer();
+    _endGame(winner) {
+        this.gameEnded = true;
+        const text = winner === 1 ? '🔴 Red Wins!' : winner === 2 ? '🔵 Blue Wins!' : "🤝 It's a Tie!";
+        this._setStatus(text);
+        const duration = Date.now() - (this.sessionStartTime || Date.now());
+        this.eventBus?.emit('game:end', {
+            gameId: 'colorwars',
+            winner,
+            winReason: text,
+            moveCount: this.moveCount,
+            sessionDuration: duration,
+            scores: { 1: this.playerScores[1], 2: this.playerScores[2] }
+        });
     }
 
-    captureOpponentArea(row, col) {
-        // (Kept for compatibility; not used via click anymore)
-        const opponentCell = this.grid[row][col];
-        if (!opponentCell || opponentCell.owner === this.currentPlayer) return;
-
-        const totalDots = opponentCell.dots + 1;
-
-        opponentCell.owner = this.currentPlayer;
-        opponentCell.dots = totalDots;
-        opponentCell.color = this.currentPlayer === 1 ? 'red' : 'blue';
-
-        this.playerScores[this.currentPlayer] += totalDots;
-
-        if (totalDots >= 4) {
-            this.expandTerritory(row, col);
-            opponentCell.dots = 1;
-        }
-
-        this.updateDisplay();
-        this.checkWinCondition();
-        this.switchPlayer();
+    _switchPlayer() {
+        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+        this._updateDisplay();
     }
 
-    expandTerritory(row, col, depth = 0) {
-        // Prevent infinite expansion
-        if (depth > this.maxExpansionDepth) return;
-        
-        // Add expanding animation to the current cell
-        const currentCellElement = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-        if (currentCellElement) {
-            currentCellElement.classList.add('expanding');
-            setTimeout(() => {
-                currentCellElement.classList.remove('expanding');
-            }, 600);
-        }
-        
-        // Spread +1 dot to each neighbor and convert ownership to current player
-        const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-        const currentPlayer = this.grid[row][col].owner;
-        let expanded = false;
-        const cellsToExpand = []; // Track cells that need further expansion
-
-        for (const [dr, dc] of directions) {
-            const newRow = row + dr;
-            const newCol = col + dc;
-
-            if (this.isValidPosition(newRow, newCol)) {
-                const targetCell = this.grid[newRow][newCol];
-
-                if (!targetCell || targetCell.owner === null) {
-                    // Capturing empty cell: set to 1 dot and assign owner
-                    this.grid[newRow][newCol] = {
-                        owner: currentPlayer,
-                        dots: 1,
-                        color: currentPlayer === 1 ? 'red' : 'blue'
-                    };
-                    this.playerScores[currentPlayer]++;
-                    expanded = true;
-                } else if (targetCell.owner !== currentPlayer) {
-                    // Capturing opponent cell: subtract from opponent's score first
-                    this.playerScores[targetCell.owner] -= targetCell.dots;
-                    // Then add 1 to existing dots and change owner
-                    const totalDots = targetCell.dots + 1;
-                    targetCell.owner = currentPlayer;
-                    targetCell.dots = totalDots;
-                    targetCell.color = currentPlayer === 1 ? 'red' : 'blue';
-                    this.playerScores[currentPlayer] += totalDots;
-                    expanded = true;
-
-                    // If this captured cell reaches exactly 4 dots, mark for expansion
-                    if (totalDots === 4 && depth < this.maxExpansionDepth) {
-                        cellsToExpand.push([newRow, newCol]);
-                    }
-                } else if (targetCell.owner === currentPlayer) {
-                    // Adding to own cell: just increment dots and score
-                    targetCell.dots++;
-                    this.playerScores[currentPlayer]++;
-                    expanded = true;
-
-                    // If this cell reaches exactly 4 dots, mark for expansion
-                    if (targetCell.dots === 4 && depth < this.maxExpansionDepth) {
-                        cellsToExpand.push([newRow, newCol]);
-                    }
-                }
-            }
-        }
-
-        if (expanded) {
-            this.updateGridDisplay();
-            this.updateDisplay();
-        }
-
-        // Process chain reactions with delay for visual effect
-        if (cellsToExpand.length > 0) {
-            // Highlight cells that will expand next
-            cellsToExpand.forEach(([expandRow, expandCol]) => {
-                const cellElement = document.querySelector(`[data-row="${expandRow}"][data-col="${expandCol}"]`);
-                if (cellElement) {
-                    cellElement.classList.add('chain-expanding');
-                }
-            });
-
-            setTimeout(() => {
-                for (const [expandRow, expandCol] of cellsToExpand) {
-                    this.grid[expandRow][expandCol].dots = 1; // Reset to 1 after marking for expansion
-                    // Remove highlighting
-                    const cellElement = document.querySelector(`[data-row="${expandRow}"][data-col="${expandCol}"]`);
-                    if (cellElement) {
-                        cellElement.classList.remove('chain-expanding');
-                    }
-                }
-                this.updateGridDisplay();
-                
-                // Process each expansion with staggered delays
-                cellsToExpand.forEach(([expandRow, expandCol], index) => {
-                    setTimeout(() => {
-                        this.expandTerritory(expandRow, expandCol, depth + 1);
-                    }, index * 300); // 300ms delay between each expansion
-                });
-            }, 500); // Initial 500ms delay before starting chain reactions
-        }
-    }
-
-    expandFromCell(row, col) {
-        // This method is now deprecated - we use expandTerritory for all expansions
-        // to ensure consistent chain reaction behavior
-        this.expandTerritory(row, col);
-    }
-
-    isValidPosition(row, col) {
-        return row >= 0 && row < this.gridSize && col >= 0 && col < this.gridSize;
-    }
-
-    updateGridDisplay() {
-        const cells = document.querySelectorAll('.grid-cell');
-
+    _updateGridDisplay() {
+        if (!this.boardElement) return;
+        const cells = this.boardElement.querySelectorAll('.cw-cell');
         cells.forEach((cellEl, index) => {
             const row = Math.floor(index / this.gridSize);
             const col = index % this.gridSize;
             const gridCell = this.grid[row][col];
-
-            // Reset classes/content
-            cellEl.className = 'grid-cell';
-
+            cellEl.className = 'cw-cell';
+            cellEl.innerHTML = '';
             if (gridCell && gridCell.owner) {
-                // color class
                 cellEl.classList.add(gridCell.color);
-
-                // Clickable logic:
-                // - If it's the player's FIRST move: all cells are clickable
-                // - Otherwise: only cells owned by current player are clickable
                 if (!this.playerFirstMoves[this.currentPlayer]) {
-                    if (this.currentPlayer === 1) cellEl.classList.add('clickable-red');
-                    else cellEl.classList.add('clickable-blue');
+                    cellEl.classList.add(this.currentPlayer === 1 ? 'clickable-red' : 'clickable-blue');
                 } else {
-                    if (gridCell.owner === this.currentPlayer) {
-                        if (this.currentPlayer === 1) cellEl.classList.add('clickable-red');
-                        else cellEl.classList.add('clickable-blue');
-                    } else {
-                        cellEl.classList.add('not-clickable');
-                    }
+                    if (gridCell.owner === this.currentPlayer) cellEl.classList.add(this.currentPlayer === 1 ? 'clickable-red' : 'clickable-blue');
+                    else cellEl.classList.add('not-clickable');
                 }
-
-                // draw dots inside cell
-                cellEl.innerHTML = '';
                 for (let i = 0; i < gridCell.dots; i++) {
                     const dot = document.createElement('div');
-                    dot.className = 'dot';
+                    dot.className = 'cw-dot';
                     cellEl.appendChild(dot);
                 }
             } else {
-                // empty cell
                 if (!this.playerFirstMoves[this.currentPlayer]) {
-                    // clickable during the player's first move
-                    if (this.currentPlayer === 1) cellEl.classList.add('clickable-red');
-                    else cellEl.classList.add('clickable-blue');
+                    cellEl.classList.add(this.currentPlayer === 1 ? 'clickable-red' : 'clickable-blue');
                 } else {
                     cellEl.classList.add('not-clickable');
                 }
-                cellEl.innerHTML = '';
             }
         });
     }
 
-    checkWinCondition() {
-        let redCount = 0;
-        let blueCount = 0;
-        let emptyCount = 0;
-
-        for (let row = 0; row < this.gridSize; row++) {
-            for (let col = 0; col < this.gridSize; col++) {
-                const cell = this.grid[row][col];
-                if (cell && cell.owner) {
-                    if (cell.owner === 1) redCount++;
-                    else blueCount++;
-                } else {
-                    emptyCount++;
-                }
-            }
-        }
-
-        const canRedMove = this.canPlayerMove(1);
-        const canBlueMove = this.canPlayerMove(2);
-
-        if (!canRedMove && !canBlueMove) {
-            if (redCount > blueCount) this.endGame(1);
-            else if (blueCount > redCount) this.endGame(2);
-            else this.endGame('tie');
-            return;
-        }
-
-        if (!canRedMove && canBlueMove) {
-            this.endGame(2);
-            return;
-        }
-
-        if (!canBlueMove && canRedMove) {
-            this.endGame(1);
-            return;
-        }
-
-        if (emptyCount === 0) {
-            if (redCount > blueCount) this.endGame(1);
-            else if (blueCount > redCount) this.endGame(2);
-            else this.endGame('tie');
-        }
-    }
-
-    canPlayerMove(player) {
-        // Can add dot in own area?
-        for (let row = 0; row < this.gridSize; row++) {
-            for (let col = 0; col < this.gridSize; col++) {
-                const cell = this.grid[row][col];
-                if (cell && cell.owner === player && cell.dots < 4) {
-                    return true;
-                }
-            }
-        }
-
-        // Can capture opponent area by spreading (i.e., opponent cell adjacent to your territory)
-        for (let row = 0; row < this.gridSize; row++) {
-            for (let col = 0; col < this.gridSize; col++) {
-                const cell = this.grid[row][col];
-                if (cell && cell.owner !== null && cell.owner !== player) {
-                    if (this.canSpreadToCell(row, col, player)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    endGame(winner) {
-        this.gameEnded = true;
-
-        const popup = document.createElement('div');
-        popup.className = 'winner-popup';
-
-        let winnerText = '';
-        if (winner === 1) winnerText = '🔴 RED WINS! 🔴';
-        else if (winner === 2) winnerText = '🔵 BLUE WINS! 🔵';
-        else winnerText = '🤝 IT\'S A TIE! 🤝';
-
-        popup.innerHTML = `
-            <div class="popup-content">
-                <h2>${winnerText}</h2>
-                <div class="final-scores">
-                    <div class="score-item">
-                        <span class="player-name">🔴 Red:</span>
-                        <span class="score-value">${this.playerScores[1]}</span>
-                    </div>
-                    <div class="score-item">
-                        <span class="player-name">🔵 Blue:</span>
-                        <span class="score-value">${this.playerScores[2]}</span>
-                    </div>
-                </div>
-                <button class="reset-btn" onclick="location.reload()">Play Again</button>
-            </div>
-        `;
-
-        document.body.appendChild(popup);
-    }
-
-    switchPlayer() {
-        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-        this.updateDisplay();
-    }
-
-    newGame() {
-        this.initializeGrid();
-        this.currentPlayer = 1;
-        this.gameStarted = false;
-        this.playerScores = { 1: 0, 2: 0 };
-        this.clearGameStatus();
-        this.updateDisplay();
-    }
-
-    resetGame() {
-        this.initializeGrid();
-        this.currentPlayer = 1;
-        this.gameStarted = false;
-        this.playerScores = { 1: 0, 2: 0 };
-        this.clearGameStatus();
-        this.updateDisplay();
-    }
-
-    updateDisplay() {
-        // Update scores (if elements exist)
-        const s1 = document.getElementById('score-1');
-        const s2 = document.getElementById('score-2');
+    _updateDisplay() {
+        if (!this.boardElement) return;
+        const s1 = this.boardElement.querySelector('#cw-score-1');
+        const s2 = this.boardElement.querySelector('#cw-score-2');
+        const turn = this.boardElement.querySelector('#cw-turn');
+        const p1 = this.boardElement.querySelector('#cw-p1');
+        const p2 = this.boardElement.querySelector('#cw-p2');
         if (s1) s1.textContent = this.playerScores[1];
         if (s2) s2.textContent = this.playerScores[2];
-
-        // Update turn indicator
-        const turnIndicator = document.getElementById('turn-indicator');
-        if (turnIndicator) {
+        if (turn) {
             if (!this.playerFirstMoves[this.currentPlayer]) {
-                turnIndicator.textContent = `🔴 Player ${this.currentPlayer === 1 ? 'Red' : 'Blue'}: Place 3 dots anywhere!`;
+                turn.textContent = `${this.currentPlayer === 1 ? '🔴 Red' : '🔵 Blue'}: Place 3 dots anywhere!`;
             } else {
-                if (this.currentPlayer === 1) {
-                    turnIndicator.textContent = `🔴 Red's Turn: Add dots to RED areas only (capture only via spread)`;
-                } else {
-                    turnIndicator.textContent = `🔵 Blue's Turn: Add dots to BLUE areas only (capture only via spread)`;
-                }
+                turn.textContent = `${this.currentPlayer === 1 ? '🔴 Red' : '🔵 Blue'}: Add dots to your color`;
             }
         }
-
-        // Active player styling if you have .player elements
-        document.querySelectorAll('.player').forEach(player => player.classList.remove('active'));
-        const activePlayer = document.querySelector(`.player-${this.currentPlayer}`);
-        if (activePlayer) activePlayer.classList.add('active');
-
-        // Update grid visuals
-        this.updateGridDisplay();
+        if (p1) p1.classList.toggle('active', this.currentPlayer === 1);
+        if (p2) p2.classList.toggle('active', this.currentPlayer === 2);
+        this._updateGridDisplay();
     }
 
-    showGameStatus(message, type = '') {
-        const gameStatus = document.getElementById('game-status');
-        if (!gameStatus) return;
-        gameStatus.textContent = message;
-        gameStatus.className = `game-status ${type}`;
+    _setStatus(msg) {
+        const el = this.boardElement?.querySelector('#cw-status');
+        if (el) el.textContent = msg;
     }
 
-    clearGameStatus() {
-        const gameStatus = document.getElementById('game-status');
-        if (!gameStatus) return;
-        gameStatus.textContent = '';
-        gameStatus.className = 'game-status';
-    }
+    getState() { return { currentPlayer: this.currentPlayer, gameActive: !this.gameEnded }; }
+    makeMove() { return { valid: false }; }
+    cleanup() { if (this.boardElement) this.boardElement.innerHTML = ''; }
 }
-
-// Initialize the game when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    new ColorWars();
-});

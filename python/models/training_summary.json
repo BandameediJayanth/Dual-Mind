@@ -1,5 +1,5 @@
 {
-  "training_date": "2026-01-22T18:23:05.034753",
+  "training_date": "2026-01-28T19:31:25.421912",
   "model_type": "random_forest",
   "n_samples": 1000,
   "skill_predictor": {
@@ -8,6 +8,6 @@
   },
   "performance_estimator": {
     "test_r2": 0.8710635687137454,
-    "test_rmse": 7.694426087061545
+    "test_rmse": 7.694426087061544
   }
 }

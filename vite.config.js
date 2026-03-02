@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
+  plugins: [react()],
   root: "./",
   base: "./",
   publicDir: "assets",
@@ -10,7 +12,7 @@ export default defineConfig({
     cors: true,
     proxy: {
       "/api/ml": {
-        target: "http://localhost:5000",
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
     },
@@ -18,39 +20,23 @@ export default defineConfig({
   build: {
     outDir: "dist",
     assetsDir: "assets",
-    sourcemap: true,
-    minify: "terser",
+    sourcemap: false,
+    chunkSizeWarningLimit: 2500,
     rollupOptions: {
       input: {
         main: "./index.html",
       },
       output: {
         manualChunks: {
-          games: [
-            "./src/js/games/TicTacToe.js",
-            "./src/js/games/FourInARow.js",
-            "./src/js/games/Checkers.js",
-            "./src/js/games/DotsAndBoxes.js",
-            "./src/js/games/MemoryMatch.js",
-            "./src/js/games/WordChain.js",
-            "./src/js/games/Ludo.js",
-            "./src/js/games/SnakeAndLadders.js",
-            "./src/js/games/ColorWars.js",
-            "./src/js/games/SeaWars.js",
-          ],
-          core: [
-            "./src/js/core/EventBus.js",
-            "./src/js/core/GameController.js",
-            "./src/js/ui/UIManager.js",
-            "./src/js/storage/StorageManager.js",
-          ],
+          vendor: ["react", "react-dom", "framer-motion"],
+          anime: ["animejs"],
         },
       },
     },
   },
   resolve: {
     alias: {
-      "@": "/src/js",
+      "@": "/src",
       "@games": "/src/js/games",
       "@core": "/src/js/core",
       "@ml": "/src/js/ml",

@@ -1,0 +1,107 @@
+.showcase {
+  min-height: 100vh;
+  padding: 120px 0;
+  background: var(--bg-surface);
+  position: relative;
+}
+
+.showcase-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.showcase-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.showcase-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+/* Games Grid */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.game-card-item {
+  position: relative;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.game-card-item:hover {
+  border-color: var(--card-accent, var(--color-primary));
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card-icon-wrap {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cell-hover-bg);
+  border-radius: 14px;
+  font-size: 1.8rem;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-category {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--card-accent, var(--color-primary));
+}
+
+.card-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+/* Hover glow effect */
+.card-glow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--card-accent, var(--color-primary)), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.game-card-item:hover .card-glow {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .games-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .game-card-item {
+    padding: 20px 16px;
+  }
+}

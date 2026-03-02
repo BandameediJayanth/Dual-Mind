@@ -1,0 +1,14 @@
+.particles-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  background: var(--color-primary);
+  border-radius: 50%;
+  will-change: transform, opacity;
+}

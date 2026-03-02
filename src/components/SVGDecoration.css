@@ -1,0 +1,36 @@
+.svg-decoration {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.circuit-svg {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 180px;
+  opacity: 0.5;
+}
+
+.circuit-left {
+  left: 0;
+}
+
+.circuit-right {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+.circuit-line {
+  fill: none;
+}
+
+.hex-svg {
+  position: absolute;
+  top: 80px;
+  right: 80px;
+  width: 120px;
+  height: 120px;
+}

@@ -138,10 +138,10 @@ pytest
 | Dots & Boxes | 2 | Easy | Strategic timing |
 | Memory Match | 1-2 | Easy | Short-term memory |
 | Word Chain | 2+ | Medium | Vocabulary, speed |
-| Game 24 | 1+ | Hard | Arithmetic, logic |
-| Mini Sudoku | 1 | Easy-Med | Logical deduction |
+| Sea Wars | 2 | Medium | Stategic planning |
+| Snake & Ladders | 2 | Easy | Probability & Risk |
+| Color Wars | 2 | Medium | Strategic expansion |
 | Ludo | 2-4 | Easy | Risk assessment |
-| Reversi | 2 | Med-Hard | Strategic planning |
 
 ## 📊 Performance Metrics
 

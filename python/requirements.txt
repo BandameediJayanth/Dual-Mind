@@ -1,19 +1,22 @@
-# Python ML Dependencies for Game Suite
+# Python ML Dependencies for DualMind
 # Install with: pip install -r requirements.txt
 
-# Core ML Libraries (Required)
+# Core ML Libraries
 numpy>=1.21.0
 scikit-learn>=1.0.0
 
-# Optional: XGBoost (for alternative model)
+# Optional: XGBoost
 xgboost>=1.5.0
 
-# API Server
-flask>=2.0.0
-flask-cors>=3.0.0
+# API Server (FastAPI + Uvicorn)
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
 
 # Data Processing
 pandas>=1.3.0
 
 # Utilities
 python-dateutil>=2.8.0
+
+# Redis (optional — for distributed caching)
+redis>=4.5.0

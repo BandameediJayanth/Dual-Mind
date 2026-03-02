@@ -1,0 +1,233 @@
+/* ============================================
+   DUAL MIND — Theme System
+   Light theme default · Dark mode via media query
+   ============================================ */
+
+:root {
+  /* ---- LIGHT THEME (default) ---- */
+  --bg-deep: #f8fafc;
+  --bg-surface: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f4ff;
+  --bg-overlay: rgba(255, 255, 255, 0.85);
+  --bg-glass: rgba(255, 255, 255, 0.7);
+
+  --color-primary: #6366f1;
+  --color-primary-glow: rgba(99, 102, 241, 0.25);
+  --color-secondary: #0ea5e9;
+  --color-accent: #e0e7ff;
+  --color-cyan: #0ea5e9;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+
+  --text-bright: #0f172a;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+
+  --border-subtle: rgba(99, 102, 241, 0.12);
+  --border-glow: rgba(99, 102, 241, 0.2);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 8px 40px rgba(0, 0, 0, 0.1);
+
+  --hero-bg-left: #f0f4ff;
+  --hero-bg-right: #e8ecff;
+  --navbar-bg: rgba(248, 250, 252, 0.88);
+  --glass-border: rgba(99, 102, 241, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --input-bg: rgba(241, 245, 249, 0.8);
+  --cell-bg: rgba(241, 245, 249, 0.6);
+  --cell-hover-bg: rgba(99, 102, 241, 0.06);
+
+  /* Typography */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Spacing */
+  --section-padding: 120px 0;
+  --container-width: 1200px;
+}
+
+/* ---- DARK THEME (system preference) ---- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-deep: #0F0F1A;
+    --bg-surface: #1A1A2E;
+    --bg-card: #16213e;
+    --bg-card-hover: #1c2a4a;
+    --bg-overlay: rgba(15, 15, 26, 0.88);
+    --bg-glass: rgba(22, 33, 62, 0.6);
+
+    --color-primary: #7c3aed;
+    --color-primary-glow: rgba(124, 58, 237, 0.35);
+    --color-secondary: #38bdf8;
+    --color-accent: #1e1b4b;
+    --color-cyan: #38bdf8;
+
+    --text-bright: #F5F7FA;
+    --text-primary: #F5F7FA;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+
+    --border-subtle: rgba(124, 58, 237, 0.1);
+    --border-glow: rgba(124, 58, 237, 0.2);
+    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+    --shadow-card-hover: 0 8px 40px rgba(0, 0, 0, 0.4);
+
+    --hero-bg-left: #0F172A;
+    --hero-bg-right: #1E1B4B;
+    --navbar-bg: rgba(15, 15, 26, 0.88);
+    --glass-border: rgba(124, 58, 237, 0.12);
+    --glass-bg: rgba(22, 33, 62, 0.6);
+    --input-bg: rgba(15, 23, 42, 0.6);
+    --cell-bg: rgba(15, 23, 42, 0.7);
+    --cell-hover-bg: rgba(124, 58, 237, 0.12);
+  }
+}
+
+/* ---- DARK THEME (manual toggle) ---- */
+[data-theme="dark"] {
+  --bg-deep: #0F0F1A;
+  --bg-surface: #1A1A2E;
+  --bg-card: #16213e;
+  --bg-card-hover: #1c2a4a;
+  --bg-overlay: rgba(15, 15, 26, 0.88);
+  --bg-glass: rgba(22, 33, 62, 0.6);
+
+  --color-primary: #7c3aed;
+  --color-primary-glow: rgba(124, 58, 237, 0.35);
+  --color-secondary: #38bdf8;
+  --color-accent: #1e1b4b;
+  --color-cyan: #38bdf8;
+
+  --text-bright: #F5F7FA;
+  --text-primary: #F5F7FA;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --border-subtle: rgba(124, 58, 237, 0.1);
+  --border-glow: rgba(124, 58, 237, 0.2);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 40px rgba(0, 0, 0, 0.4);
+
+  --hero-bg-left: #0F172A;
+  --hero-bg-right: #1E1B4B;
+  --navbar-bg: rgba(15, 15, 26, 0.88);
+  --glass-border: rgba(124, 58, 237, 0.12);
+  --glass-bg: rgba(22, 33, 62, 0.6);
+  --input-bg: rgba(15, 23, 42, 0.6);
+  --cell-bg: rgba(15, 23, 42, 0.7);
+  --cell-hover-bg: rgba(124, 58, 237, 0.12);
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+@media (hover: hover) {
+  *, *::before, *::after { cursor: none !important; }
+}
+
+.app {
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content {
+  min-height: 100vh;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+/* ============================================
+   SECTION BASE
+   ============================================ */
+
+.section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: var(--section-padding);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-secondary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* ============================================
+   LENIS SMOOTH SCROLL
+   ============================================ */
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}

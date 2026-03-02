@@ -1,0 +1,289 @@
+.game-view-container {
+  padding-top: 40px;
+  padding-bottom: 80px;
+  min-height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.game-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 72px;
+  z-index: 50;
+  background: var(--bg-deep);
+  padding: 12px 0;
+  margin: 0 -40px;
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 10px 20px;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-card);
+}
+
+.btn-back:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-bright);
+}
+
+.btn-back .arrow {
+  font-size: 1.2rem;
+}
+
+.game-title-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.game-title-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin: 0;
+  color: var(--text-bright);
+}
+
+.game-icon {
+  font-size: 1.6rem;
+}
+
+.game-board-wrapper {
+  position: relative;
+  flex-grow: 1;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.game-board-mount-point {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.game-board-mount-point canvas {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+}
+
+/* ============ RESULT MODAL ============ */
+.result-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 48px 40px 36px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+}
+
+.result-icon {
+  font-size: 3.5rem;
+  line-height: 1;
+}
+
+.result-title {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.result-reason {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.result-stats {
+  display: flex;
+  gap: 24px;
+  padding: 12px 0;
+}
+
+.result-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.result-stat-val {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.result-stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.result-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.result-actions .btn-glow {
+  padding: 14px 28px;
+}
+
+.result-actions .btn-outline-hover {
+  padding: 14px 28px;
+}
+
+/* ============ ML PREDICTION STYLES ============ */
+.ml-badge-small {
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ml-connected {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+.ml-fallback {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.ml-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.ml-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ml-prediction-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--bg-surface, rgba(0,0,0,0.04));
+  border: 1px solid var(--border-subtle);
+}
+
+.ml-tier-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.tier-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.tier-value {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--tier-color);
+}
+.tier-confidence {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.ml-perf-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.perf-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.perf-bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border-subtle);
+  overflow: hidden;
+}
+.perf-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
+}
+.perf-value {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-bright);
+  text-align: right;
+}
+
+.ml-source {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
