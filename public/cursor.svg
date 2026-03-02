@@ -4,9 +4,6 @@
       <stop offset="0%" stop-color="#3B82F6"/>
       <stop offset="100%" stop-color="#A855F7"/>
     </linearGradient>
-    <filter id="cursorShadow">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
-    </filter>
   </defs>
 
   <path 
@@ -18,8 +15,5 @@
        Q18 47 15 44 
        L8 6 Z"
     fill="url(#dualGradient)"
-    stroke="rgba(255,255,255,0.8)"
-    stroke-width="1.5"
-    filter="url(#cursorShadow)"
   />
 </svg>
