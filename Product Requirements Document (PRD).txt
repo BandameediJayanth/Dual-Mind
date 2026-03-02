@@ -1,151 +1,242 @@
 Product Requirements Document (PRD)
-Unified Browser-Based Multiplayer Game Suite with ML-Driven IQ Monitoring
+DualMind — Cognitive Gaming Platform with ML Analytics
 ________________________________________
+
 1. Purpose
-This Product Requirements Document defines the vision, scope, features, and requirements of the Unified Multiplayer Game Suite enhanced with a Machine Learning–based IQ Monitoring System. The PRD is designed to support:
+
+This PRD defines the vision, scope, features, and requirements for DualMind — a browser-based cognitive gaming platform with Machine Learning analytics. It supports:
+•	Developer onboarding and collaboration
 •	Academic submission and evaluation
 •	Clear alignment between product goals and technical design
-•	Developer understanding of system expectations
-The system emphasizes ethical intelligence analytics, deterministic gameplay, and adaptive user experience.
-________________________________________
-2. Product Vision
-To build a browser-based multiplayer gaming platform that combines classic turn-based games with explainable machine learning analytics to evaluate and enhance player cognitive performance in a non-clinical, transparent, and ethical manner.
-________________________________________
-3. Objectives
-•	Provide a unified platform for multiple classic games
-•	Maintain consistent UI and gameplay mechanics across games
-•	Capture gameplay behavior as structured data
-•	Apply ML models to analyze player performance
-•	Enable adaptive difficulty and skill-based matchmaking
-•	Ensure ethical use of analytics with user control
-________________________________________
-4. In-Scope Games (Core – ML Enabled)
-The following games form the MVP and are fully integrated with the IQ Monitoring and ML system:
-1.	Tic Tac Toe
-2.	Checkers
-3.	Four in a Row
-4.	Dots & Boxes
-5.	Memory Match
-6.	Word Chain
-7.	24 Game
-8.	Mini Sudoku
-9.	Ludo
-10.	Reversi (Othello)
-Each game contributes measurable cognitive signals suitable for machine learning.
-________________________________________
-5. Target Users
-•	Casual and competitive gamers
-•	Students and academic evaluators
-•	Cognitive skill training users
-•	Developers and researchers
-________________________________________
-6. Key Features
-6.1 Core Platform Features
-•	Browser-based access (no installation)
-•	Modular game architecture
-•	Centralized game controller
-•	Deterministic rule enforcement
-•	Unified input and event handling
-________________________________________
-6.2 Multiplayer & Gameplay
-•	Two-player, turn-based gameplay
-•	Session-based matchmaking
-•	Move validation and turn sequencing
-•	Replayable deterministic sessions
-________________________________________
-6.3 IQ Monitoring & Machine Learning Layer
-Data Collection
-•	Decision latency
-•	Move accuracy
-•	Pattern success rate
-•	Memory recall accuracy
-•	Error repetition frequency
-•	Strategic consistency
-Machine Learning Integration
-•	Supervised learning models
-•	Supported models:
-o	Random Forest
-o	XGBoost
-•	Feature-based performance prediction
-•	Skill tier classification
-•	Improvement and anomaly detection
-Outputs
-•	IQ-like Performance Index (non-clinical)
-•	Skill tier label with confidence score
-•	Trend analysis over sessions
-________________________________________
-6.4 Adaptive Gameplay Features
-•	ML-driven difficulty scaling
-•	Skill-balanced matchmaking
-•	Adaptive challenges
-•	Optional IQ Duel Mode
-________________________________________
-7. Functional Requirements
-Gameplay Engine
-•	Deterministic state machines per game
-•	Central turn controller
-•	Rule abstraction layer
-•	Valid action enforcement
-ML & Analytics
-•	Feature extraction pipeline
-•	Model inference engine
-•	Explainable predictions
-•	Separation of ML decisions from game rules
-User Interface
-•	Responsive design
-•	Accessibility support
-•	Performance and analytics dashboards
-________________________________________
-8. Non-Functional Requirements
-Performance
-•	Low-latency input handling
-•	GPU-accelerated animations
-•	Efficient state updates
-Reliability
-•	Deterministic replay
-•	Reproducible ML inference
-Ethics & Compliance
-•	Non-clinical framing of IQ
-•	Opt-in data storage
-•	Transparent scoring explanation
-•	No biometric or personal profiling
-________________________________________
-9. Data Requirements
-•	Gameplay event logs
-•	Feature vectors per session
-•	ML prediction outputs
-•	User-controlled persistence
-________________________________________
-10. Success Metrics
-Product Metrics
-•	Session completion rate
-•	Player retention
-•	Engagement duration
-ML Metrics
-•	Skill prediction accuracy
-•	Stability of predictions
-•	Player improvement trends
-________________________________________
-11. Risks & Mitigation
-Risk	Mitigation
-IQ misinterpretation	Clear non-clinical labeling
-Model bias	Feature normalization & review
-Over-adaptation	Caps on difficulty changes
-Data misuse	Local-first storage & consent
-________________________________________
-12. Future Scope
-•	Real-time multiplayer
-•	AI opponents using ML/RL
-•	Advanced skill clustering
-•	Cross-platform deployment
-________________________________________
-13. Assumptions & Constraints
-•	Internet browser availability
-•	Limited dataset size initially
-•	ML used only for analytics and adaptation
-________________________________________
-14. Approval & Versioning
-Document Version: 2.0
-Status: ML-Integrated PRD
-Prepared For: Academic & Developer Review
 
+DualMind combines classic games with explainable ML to evaluate and visualize player cognitive performance in a non-clinical, transparent, and ethical manner.
+________________________________________
+
+2. Product Vision
+
+A premium web gaming platform where every game you play reveals something about how you think. DualMind uses machine learning to analyze decision-making patterns — speed, accuracy, strategy, consistency — and provides players with a cognitive performance profile that improves over time.
+________________________________________
+
+3. Objectives
+
+•	Provide a unified platform for 10 classic games with consistent UI
+•	Capture real-time gameplay behavior as structured data
+•	Apply ML models to predict skill tiers and performance indices
+•	Display cognitive insights after every game
+•	Scale to support 10,000+ concurrent users
+•	Maintain ethical, transparent, non-clinical analytics
+________________________________________
+
+4. Games (Implemented)
+
+The following 10 games are fully implemented and integrated with the ML pipeline:
+
+  Strategy Games:
+    1. Tic Tac Toe — Pattern recognition, optimal play
+    2. Four in a Row — Strategic planning, column control
+    3. Checkers — Multi-step thinking, capture optimization
+
+  Territory Games:
+    4. Dots & Boxes — Edge selection strategy, area control
+    5. Color Wars — Territorial expansion, risk assessment
+    6. Sea Wars — Grid-based combat, probabilistic reasoning
+
+  Memory & Language Games:
+    7. Memory Match — Recall accuracy, error repetition
+    8. Word Chain — Vocabulary breadth, association speed
+
+  Chance & Decision Games:
+    9. Ludo — Risk handling under randomness
+    10. Snake & Ladders — Adaptability to chance events
+
+Each game emits standardized events (game:move, game:end) for ML feature extraction.
+________________________________________
+
+5. Target Users
+
+•	Casual gamers who want cognitive insights
+•	Competitive players tracking skill improvement
+•	Students and academic evaluators
+•	Cognitive science researchers
+•	Developers contributing to the platform
+________________________________________
+
+6. Key Features
+
+6.1 Core Platform
+•	Single-page React application (no page reloads)
+•	Premium dark/light theme with smooth animations
+•	Responsive design (mobile, tablet, desktop)
+•	Page loader, cursor follower, particle effects
+•	Zero-config: works in any modern browser
+
+6.2 Game Experience
+•	Consistent game-to-game UI via GameView component
+•	Result modal with play again / quit options
+•	ML prediction displayed in result modal
+•	Back to Games navigation from any game
+•	Per-game difficulty indicators
+
+6.3 ML Analytics (Current)
+•	Data Collection:
+    - Decision time per move
+    - Move accuracy and error rate
+    - Pattern success rate
+    - Strategic depth and consistency
+    - 15+ total features per session
+
+•	Models:
+    - Skill Predictor: Random Forest classifier → 5 tiers
+    - Performance Estimator: Random Forest regressor → 0-100 score
+    - Trend Analyzer: Linear regression on session history
+
+•	Outputs (shown in result modal):
+    - Skill tier badge (Novice → Expert) with confidence %
+    - Performance index bar (0-100) with animation
+    - Prediction source indicator (ML Model vs Rule-based)
+
+6.4 Backend API
+•	FastAPI + Uvicorn (async, production-ready)
+•	Auto-generated Swagger docs at /docs
+•	TTL cache for prediction results (60s)
+•	Rate limiting (100 req/min per IP)
+•	Health check and monitoring endpoints
+________________________________________
+
+7. Functional Requirements
+
+7.1 Gameplay
+•	Deterministic state machines per game
+•	Valid move enforcement
+•	Win/draw/loss detection
+•	Event-based communication (game:move, game:end)
+•	Game engines independent of ML predictions
+
+7.2 ML Pipeline
+•	Client-side feature extraction (FeatureExtractor.js)
+•	API communication with fallback (MLClient.js)
+•	React context for ML state management (MLProvider.jsx)
+•	Session history in localStorage
+•	Graceful degradation when Python service is offline
+
+7.3 Backend
+•	Model loading at startup (ModelPool singleton)
+•	Cached predictions (Cache-Aside pattern)
+•	Rate-limited API access
+•	Gzip response compression
+•	CORS support for frontend communication
+________________________________________
+
+8. Non-Functional Requirements
+
+Performance:
+•	Frontend: <2s build time, <3s initial load
+•	Backend: ~8,000 req/s capacity (4 Uvicorn workers)
+•	ML inference: <50ms per prediction
+•	Cache hit: <1ms response time
+
+Reliability:
+•	Fallback predictions when Python service is offline
+•	Graceful error handling in all components
+•	Zero build warnings
+
+Scalability:
+•	Horizontal scaling via additional Uvicorn workers
+•	Stateless API design
+•	Cache-first architecture
+
+Ethics:
+•	Non-clinical framing ("Performance Index", not "IQ")
+•	No personal or biometric data
+•	All analytics locally stored
+•	Feature importance transparency
+________________________________________
+
+9. Data Requirements
+
+Currently Collected:
+•	Per-session feature vectors (15+ features)
+•	Game results (win/loss/draw)
+•	ML predictions and confidence scores
+•	Session history (localStorage)
+
+Planned (Phase 1):
+•	Per-move raw data (timestamp, board state, move, decision time)
+•	Per-session aggregates in structured database
+•	Prediction logs for model evaluation
+________________________________________
+
+10. Success Metrics
+
+Product:
+•	All 10 games fully playable
+•	ML predictions displayed for every completed game
+•	Build: zero warnings, <3s build time
+•	Backend: health check passing, models loaded
+
+ML (Current):
+•	Skill prediction accuracy: 97.5% (synthetic data)
+•	Performance R²: 0.871
+•	Fallback predictions always available
+
+ML (Future — on real data):
+•	Skill prediction accuracy: >75% on real data
+•	Calibrated probabilities (Brier score <0.2)
+•	Macro F1 >0.7 across all tiers
+•	Prediction stability across sessions
+________________________________________
+
+11. Risks & Mitigation
+
+Risk                          Mitigation
+Performance misinterpretation  Clear non-clinical labeling, explanations
+Model trained on synthetic data  Planned real data collection pipeline
+Backend overload              Rate limiting, caching, horizontal scaling
+ML service downtime           JavaScript fallback predictions
+Feature drift over time       Periodic model retraining pipeline
+________________________________________
+
+12. Future Scope
+
+Immediate (Phase 1):
+•	Full gameplay data logging (per-move, per-session)
+•	SQLite/PostgreSQL database integration
+•	Switch to LightGBM models
+•	Probability calibration
+•	New features: entropy, recovery rate, fatigue proxy
+
+Medium-term (Phase 2):
+•	LSTM/Transformer on per-move sequences
+•	Multi-task learning architecture
+•	User accounts and cloud sync
+•	Leaderboards and social features
+
+Long-term (Phase 3):
+•	Real-time multiplayer via WebSockets
+•	AI opponents using reinforcement learning
+•	Cross-platform PWA
+•	A/B testing framework for models
+•	Advanced cognitive profiling
+________________________________________
+
+13. Contributor Guide
+
+Getting Started:
+  1. Clone: git clone https://github.com/BandameediJayanth/Dual-Mind.git
+  2. Frontend: npm install && npm run dev
+  3. Backend: cd python && pip install -r requirements.txt
+  4. Start API: uvicorn server:app --port 8000 --reload
+  5. Open http://localhost:5173
+
+Key Directories:
+  src/components/     — React UI components
+  src/js/games/       — Vanilla JS game engines
+  src/js/ml/          — ML client and feature extraction
+  python/server.py    — FastAPI backend
+  python/ml/          — ML models and processors
+  python/models/      — Trained .pkl model files
+________________________________________
+
+Document Version: 3.0
+Status: React + FastAPI Architecture
+Last Updated: March 2026

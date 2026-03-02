@@ -1,206 +1,121 @@
-# 🧠 Dual Mind
+# DualMind — Cognitive Gaming Platform
 
-<p align="center">
-  <img src="src/assets/images/logo.png" alt="Dual Mind Logo" width="150">
-</p>
+A premium web gaming platform that analyzes how you think while you play. 10 classic games, machine learning analytics, and a cognitive performance profile that evolves with every session.
 
-<p align="center">
-  <strong>Where Human Intelligence Meets Machine Learning</strong>
-</p>
+![DualMind](logo.png)
 
-<p align="center">
-  A collection of 10 classic games with ML-driven performance monitoring
-</p>
+## ✨ Features
 
-<p align="center">
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
-  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"><img src="https://img.shields.io/badge/JavaScript-ES6+-yellow.svg" alt="JavaScript"></a>
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.9+-blue.svg" alt="Python"></a>
-</p>
-
----
-
-## 📋 Overview
-
-**Dual Mind** represents the duality between human cognition and artificial intelligence. The logo symbolizes this fusion - the human side (orange/red) representing natural intelligence, and the AI side (blue) representing machine learning analysis.
-
-This browser-based multiplayer game suite features 10 classic games with integrated machine learning to track and analyze player performance. The system generates a "Performance Index" (non-clinical) based on gameplay patterns.
-
-## 🎯 Features
-
-- **10 Classic Games**: Tic-Tac-Toe, Connect Four, Checkers, Dots & Boxes, Memory Match, Word Chain, Game 24, Mini Sudoku, Ludo, Reversi
-- **Performance Tracking**: Real-time cognitive metrics including response time, accuracy, and strategic depth
-- **ML-Powered Insights**: Skill tier prediction and performance trends using Random Forest and XGBoost
-- **Responsive Design**: Works on desktop and mobile browsers
-- **Privacy-First**: All data stored locally, with user consent controls
-- **Accessible**: ARIA labels, keyboard navigation, high-contrast themes
+- **10 Classic Games** — Tic Tac Toe, Four in a Row, Checkers, Dots & Boxes, Memory Match, Word Chain, Ludo, Snake & Ladders, Color Wars, Sea Wars
+- **ML-Powered Analytics** — Real-time skill tier prediction and performance index after every game
+- **Premium UI** — Dark/light themes, Framer Motion animations, glassmorphism design
+- **Scalable Backend** — FastAPI + Uvicorn handling 8K+ req/s with caching and rate limiting
+- **Ethical by Design** — Non-clinical "Performance Index", no personal data, full transparency
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐     ┌─────────────────┐
-│   Browser UI    │────▶│  Python ML API  │
-│   (JavaScript)  │◀────│  (Flask/sklearn)│
-└─────────────────┘     └─────────────────┘
-        │                       │
-        ▼                       ▼
-┌─────────────────┐     ┌─────────────────┐
-│  Local Storage  │     │  ML Models      │
-│  (IndexedDB)    │     │  (.joblib)      │
-└─────────────────┘     └─────────────────┘
+React Frontend (Vite)          Python Backend (FastAPI)
+┌──────────────────┐           ┌──────────────────────┐
+│ GameView         │──HTTP──→  │ /api/ml/predict/skill│
+│ FeatureExtractor │           │ /api/ml/predict/perf │
+│ MLClient         │←─JSON──  │ ModelPool (singleton) │
+│ MLProvider (ctx) │           │ TTLCache (60s)        │
+└──────────────────┘           │ RateLimiter (100/min) │
+                               └──────────────────────┘
 ```
-
-**Key Design Decisions:**
-- JavaScript handles all game logic, UI, and feature extraction
-- Python handles all ML training and inference (no ML in JS)
-- REST API communication between frontend and ML server
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-
-- Node.js 18+ and npm
+- Node.js 18+
 - Python 3.9+
 
-### Frontend Setup
-
+### Frontend
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
+npm run dev          # → http://localhost:5173
 ```
 
-### ML Server Setup
-
+### Backend (separate terminal)
 ```bash
-# Navigate to python directory
 cd python
-
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-
-# Install dependencies
+.\venv\Scripts\activate    # Windows
+# source venv/bin/activate # Mac/Linux
 pip install -r requirements.txt
-
-# Train models (generates synthetic data)
-python train_models.py
-
-# Start ML API server
-python api_server.py
+uvicorn server:app --port 8000 --reload
 ```
 
-### Running Tests
-
+### Production Build
 ```bash
-# JavaScript tests
-npm test
-
-# Python tests
-cd python
-pytest
+npm run build        # ~2-6s, zero warnings
 ```
 
 ## 📁 Project Structure
 
 ```
-├── src/
-│   ├── css/                 # Stylesheets
-│   ├── js/
-│   │   ├── core/           # EventBus, GameController, StorageManager
-│   │   ├── games/          # 10 game engines
-│   │   ├── ml/             # Feature extraction, ML client
-│   │   └── ui/             # Dashboard, UI components
-│   └── assets/             # Images, sounds
-├── python/
-│   ├── ml/                 # ML models and processors
-│   ├── api_server.py       # Flask REST API
-│   └── train_models.py     # Model training script
-├── tests/                  # Jest test files
-├── docs/                   # Documentation
-├── index.html              # Entry point
-├── package.json            # Node dependencies
-└── vite.config.js          # Build configuration
+src/
+├── components/          React UI (Navbar, Home, GameView, MLProvider...)
+└── js/
+    ├── games/           10 vanilla JS game engines
+    └── ml/              MLClient, FeatureExtractor
+
+python/
+├── server.py            FastAPI backend
+├── ml/                  Model classes (SkillPredictor, PerformanceEstimator)
+├── models/              Trained .pkl files
+└── train_models.py      Training script
 ```
 
-## 🎮 Games Included
+## 🤖 ML Pipeline
 
-| Game | Players | Difficulty | Skills Measured |
-|------|---------|------------|-----------------|
-| Tic-Tac-Toe | 2 | Easy | Pattern recognition |
-| Four in a Row | 2 | Medium | Spatial reasoning |
-| Checkers | 2 | Medium | Tactical thinking |
-| Dots & Boxes | 2 | Easy | Strategic timing |
-| Memory Match | 1-2 | Easy | Short-term memory |
-| Word Chain | 2+ | Medium | Vocabulary, speed |
-| Sea Wars | 2 | Medium | Stategic planning |
-| Snake & Ladders | 2 | Easy | Probability & Risk |
-| Color Wars | 2 | Medium | Strategic expansion |
-| Ludo | 2-4 | Easy | Risk assessment |
+```
+Player plays game
+  → FeatureExtractor captures: decision time, accuracy, patterns (15+ features)
+  → MLClient sends features to FastAPI
+  → SkillPredictor classifies: Novice → Expert (Random Forest)
+  → PerformanceEstimator scores: 0-100 (Random Forest)
+  → Result modal displays: skill tier badge + performance bar
+```
 
-## 📊 Performance Metrics
+**Current Models**: Random Forest (trained on 1000 synthetic samples)
+**Planned**: LightGBM → LSTM/Transformer on real gameplay data
 
-The system tracks:
-- **Response Time**: Decision speed per move
-- **Move Accuracy**: Optimal vs. suboptimal choices
-- **Consistency**: Performance stability across sessions
-- **Improvement Rate**: Learning curve over time
+## 🔧 Tech Stack
 
-### Skill Tiers
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, Vite 5, Framer Motion, GSAP |
+| Game Engines | Vanilla JavaScript (ES6+) |
+| Backend | FastAPI, Uvicorn |
+| ML | scikit-learn, NumPy, Pandas |
+| Caching | In-memory TTL Cache (Redis planned) |
+| Build | Vite (esbuild minifier) |
 
-| Tier | Score | Description |
-|------|-------|-------------|
-| 🟤 Novice | 0-20 | Just getting started |
-| 🟢 Beginner | 21-40 | Learning basics |
-| 🔵 Intermediate | 41-60 | Good skills |
-| 🟣 Advanced | 61-80 | Strong player |
-| 🟠 Expert | 81-100 | Exceptional |
+## 📊 API Docs
 
-## ⚠️ Important Disclaimer
-
-**This is NOT a clinical IQ test.** The Performance Index is an entertainment-focused metric designed to track gameplay performance. It should not be used for any diagnostic, academic, or professional purposes.
-
-## 🔒 Privacy
-
-- All gameplay data is stored locally on your device
-- No data is sent to external servers (except the local ML API)
-- Users can export or delete their data at any time
-- Consent is requested before any data collection
-
-## 🛠️ API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/ml/health` | GET | Check server status |
-| `/api/ml/predict/skill` | POST | Get skill tier prediction |
-| `/api/ml/predict/performance` | POST | Get performance index |
-| `/api/ml/analyze/trends` | POST | Analyze session trends |
-
-## 📚 Documentation
-
-- [User Guide](docs/USER_GUIDE.md)
-- [Architecture Overview](docs/ARCHITECTURE.md)
-- [TODO List](TODO.md)
+With the backend running, visit **http://localhost:8000/docs** for auto-generated Swagger UI.
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make changes and test: `npm run build` (must pass with zero warnings)
+4. Commit: `git commit -m "feat: description"`
+5. Push and create a Pull Request
 
-## 📄 License
+See `Design Document.txt`, `Product Requirements Document (PRD).txt`, and `Technology Stack Document.txt` for full architecture details.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## 📝 License
 
-## 🙏 Acknowledgments
+This project is for academic and educational purposes.
 
-- Classic game rules from various sources
-- scikit-learn and XGBoost for ML models
-- Vite for fast development experience
+## 🗺️ Roadmap
+
+- [ ] Full gameplay data logging (per-move + per-session)
+- [ ] Switch to LightGBM with probability calibration
+- [ ] New features: move entropy, recovery rate, fatigue proxy
+- [ ] LSTM/Transformer on move sequences (after data collection)
+- [ ] Real-time multiplayer via WebSockets
+- [ ] User accounts and leaderboards

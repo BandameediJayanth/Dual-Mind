@@ -1,179 +1,258 @@
 Design Document
-Unified Browser-Based Multiplayer Game Suite with ML-Driven IQ Monitoring
+DualMind — Cognitive Gaming Platform with ML Analytics
 ________________________________________
+
 1. Introduction
+
 1.1 Purpose
-This document describes the software design of the Unified Multiplayer Game Suite enhanced with Machine Learning–based IQ Monitoring. It bridges the gap between the PRD and implementation and is intended for:
+
+This document describes the software design of DualMind — a browser-based cognitive gaming platform with Machine Learning-driven performance analytics. It is intended for:
+•	Developer onboarding and collaboration
 •	Academic submission and evaluation
-•	Developer collaboration and system understanding
-The design follows a minimalist, modular, and ethical-first approach.
+•	System architecture understanding
+
+1.2 Current Status (v3.0)
+
+The platform is fully functional with:
+•	React frontend with 10 playable games
+•	FastAPI + Uvicorn Python backend for ML inference
+•	Trained Random Forest models for skill prediction and performance estimation
+•	End-to-end ML pipeline: gameplay → feature extraction → prediction → display
 ________________________________________
+
 2. Design Goals
-•	Deterministic and testable gameplay logic
-•	Clear separation between gameplay and ML analytics
+
+•	Clean separation between gameplay engines and ML analytics
+•	Deterministic and testable game logic
+•	Scalable backend architecture (10K+ concurrent users)
 •	Explainable and ethical ML integration
-•	High performance and low latency
+•	Premium, modern UI/UX with smooth animations
 •	Easy extensibility for new games and models
 ________________________________________
-3. System Overview
-The platform is a browser-based, turn-based multiplayer system hosting 10 classic games. A shared deterministic engine powers all games, while a separate ML-assisted analytics layer evaluates player performance and drives adaptive behavior.
-________________________________________
-4. High-Level Architecture
-4.1 Architectural Style
-•	Event-driven
-•	Layered architecture
-•	Deterministic core with ML-assisted meta layer
-4.2 Architecture Layers
-1.	Presentation (UI) Layer
-2.	Input Handling Layer
-3.	Central Controller Layer
-4.	Deterministic Game Engine Layer
-5.	Feature Extraction Layer
-6.	ML Inference Layer
-7.	IQ Scoring & Adaptation Layer
-8.	Persistence Layer
-________________________________________
-5. Component Design
-5.1 UI Layer
-Responsibilities
-•	Render game boards and controls
-•	Display turn indicators and results
-•	Visualize IQ trends and skill tiers
-Design Characteristics
-•	Responsive and minimalist
-•	Consistent layout across games
-•	Accessibility-first (contrast, scaling)
-________________________________________
-5.2 Input Handler
-Responsibilities
-•	Capture mouse, touch, and keyboard input
-•	Normalize actions into game events
-•	Prevent invalid UI-level actions
-________________________________________
-5.3 Central Game Controller
-Responsibilities
-•	Manage game sessions
-•	Enforce turn order
-•	Coordinate engine, UI, and analytics
-•	Handle matchmaking and session lifecycle
-________________________________________
-5.4 Deterministic Game Engine
-Responsibilities
-•	Maintain game state
-•	Validate moves
-•	Apply game rules
-•	Detect terminal conditions
-Design Rule
-Game outcomes must be independent of ML predictions.
-________________________________________
-5.5 State Machine Manager
-Responsibilities
-•	Track current and previous states
-•	Enable replay and debugging
-•	Support deterministic testing
-________________________________________
-5.6 Feature Extraction Layer
-Responsibilities
-•	Convert raw gameplay events into structured feature vectors
-Example Features
-•	Average decision latency
-•	Move accuracy ratio
-•	Pattern success rate
-•	Memory recall score
-•	Error repetition frequency
-________________________________________
-5.7 ML Inference Engine
-Responsibilities
-•	Load trained ML models
-•	Run inference on feature vectors
-•	Predict skill tier and confidence
-Supported Models
-•	Random Forest
-•	XGBoost
-Design Rule
-ML operates only at the analytics and adaptation level.
-________________________________________
-5.8 IQ Scoring & Adaptation Engine
-Responsibilities
-•	Compute non-clinical Performance Index
-•	Apply difficulty scaling
-•	Enable IQ Duel Mode
-________________________________________
-5.9 Persistence Layer
-Responsibilities
-•	Store session history
-•	Persist IQ trends and preferences
-Storage Options
-•	LocalStorage / IndexedDB
-•	Optional cloud sync
-________________________________________
-6. Data Flow Design
-1.	User performs action
-2.	Input Handler normalizes event
-3.	Controller validates turn
-4.	Game Engine applies move
-5.	State updated and broadcast
-6.	Feature extraction triggered
-7.	ML inference executed
-8.	IQ score updated
-9.	Adaptive response applied
-10.	Data persisted (optional)
-________________________________________
-7. Game-Specific Design Considerations
-Strategy Games
-(Tic Tac Toe, Checkers, Reversi, Four in a Row)
-•	Focus on optimal move detection
-•	Strategic depth features
-Memory Games
-(Memory Match)
-•	Recall accuracy
-•	Error repetition tracking
-Logic & Math Games
-(24 Game, Mini Sudoku)
-•	Computation speed
-•	Rule consistency
-Chance-Based Games
-(Ludo)
-•	Risk handling
-•	Adaptability to randomness
-________________________________________
-8. UI / UX Design Principles
-•	Minimalist layout
-•	Clear visual hierarchy
-•	Immediate feedback
-•	Consistent interaction patterns
-Textual Wireframe Structure
-Game Screen
-•	Header: Game name, session info
-•	Center: Game board
-•	Side panel: Player status
-•	Footer: Controls & settings
-________________________________________
-9. Ethics & Explainability
-•	IQ presented as "Performance Index"
-•	Feature importance available
-•	No personal or biometric data
-•	User-controlled analytics storage
-________________________________________
-10. Scalability & Extensibility
-•	Plug-and-play game modules
-•	Model-agnostic ML layer
-•	Event-based communication
-•	Future real-time multiplayer readiness
-________________________________________
-11. Testing Strategy
-•	Deterministic replay testing
-•	Unit tests for game rules
-•	ML validation using fixed datasets
-________________________________________
-12. Design Constraints
-•	Browser performance limits
-•	Small initial ML dataset
-•	Ethical constraints on intelligence scoring
-________________________________________
-13. Conclusion
-This design integrates deterministic game systems with explainable ML analytics while maintaining clarity, fairness, and scalability. It is suitable for both academic evaluation and production-quality development.
-________________________________________
-Document Version: 2.0
-Status: ML-Integrated Design Document
 
+3. System Overview
+
+DualMind is a single-page React application with a Python backend. Players interact with 10 classic games. While playing, a JavaScript feature extractor captures behavioral signals (decision time, accuracy, patterns). After each game, these features are sent to the FastAPI backend where trained ML models predict the player's cognitive skill tier and performance index.
+________________________________________
+
+4. High-Level Architecture
+
+4.1 Architectural Style
+•	Component-based frontend (React)
+•	RESTful API backend (FastAPI)
+•	Event-driven game engines
+•	Singleton model pool with Cache-Aside caching
+
+4.2 Architecture Layers
+
+Layer 1: React UI Layer (Components)
+  - Navbar, Home, GameShowcase, GameView, AnalyticsPreview, Settings, Footer
+  - Framer Motion animations, GSAP animated counters
+  - Dark/light theme system via CSS variables
+
+Layer 2: Game Engine Layer (Vanilla JS)
+  - 10 independent game classes, each with init(), render(), cleanup()
+  - Event bus for game:move, game:end communication
+  - Deterministic state machines per game
+
+Layer 3: ML Feature Extraction (JavaScript)
+  - FeatureExtractor: captures per-move data during gameplay
+  - MLClient: sends features to Python API, handles fallback
+  - MLProvider: React context connecting ML to components
+
+Layer 4: ML Inference (Python / FastAPI)
+  - SkillPredictor: RandomForest classifier → 5 skill tiers
+  - PerformanceEstimator: RandomForest regressor → 0-100 score
+  - TrendAnalyzer: Linear regression on session history
+  - FeatureProcessor: Min-max normalization pipeline
+
+Layer 5: Scalability Infrastructure
+  - TTL Cache (Cache-Aside pattern, 60s expiry)
+  - Rate Limiter (Token Bucket, 100 req/min per IP)
+  - Gzip compression, CORS middleware
+  - Multi-worker Uvicorn (4 workers = ~8K req/s)
+________________________________________
+
+5. Component Design
+
+5.1 React UI Components
+
+GameView (Central Game Component)
+  - Mounts vanilla JS game engine into a React ref container
+  - Listens for game:move events → records in FeatureExtractor
+  - Listens for game:end events → triggers ML prediction pipeline
+  - Displays result modal with skill tier badge, performance bar, game stats
+
+MLProvider (ML Context)
+  - Singleton MLClient and FeatureExtractor instances
+  - Session history in localStorage (trend analysis)
+  - Exposes: startSession(), recordMove(), endSessionAndPredict(), analyzeTrends()
+
+GameShowcase (Games Grid)
+  - Card-based game selection with hover animations
+  - Difficulty indicators and game descriptions
+
+AnalyticsPreview (Performance Dashboard)
+  - Displays ML prediction history and cognitive metrics
+  - Animated counters and stat cards
+
+5.2 Vanilla JS Game Engines
+
+Each game engine is a self-contained class:
+  - Constructor receives an event bus
+  - init(): sets up game state
+  - render(state, container): renders into DOM container
+  - cleanup(): removes event listeners
+  - Emits game:move and game:end events
+
+Games Implemented:
+  1. Tic Tac Toe — 3×3 grid, win detection, optimal move tracking
+  2. Four in a Row — 7×6 connect-four with gravity
+  3. Checkers — 8×8 board with capture and king mechanics
+  4. Dots & Boxes — Grid edge selection with box completion
+  5. Memory Match — Card flip matching with recall tracking
+  6. Word Chain — Word association with vocabulary scoring
+  7. Ludo — Dice-based race with strategic risk decisions
+  8. Snake & Ladders — Board traversal with chance elements
+  9. Color Wars — Territory capture with strategic placement
+  10. Sea Wars — Battleship-style grid combat
+
+5.3 Python ML Backend
+
+FastAPI Server (server.py)
+  - Pydantic request validation (automatic type checking)
+  - Async endpoints for concurrent request handling
+  - Auto-generated API docs at /docs (Swagger UI)
+
+Endpoints:
+  GET  /api/ml/health          — Service health + model status
+  POST /api/ml/predict/skill   — Skill tier prediction (cached)
+  POST /api/ml/predict/performance — Performance index (cached)
+  POST /api/ml/analyze/trends  — Session trend analysis
+  POST /api/ml/predict/batch   — Bulk predictions
+  GET  /api/ml/stats           — Server monitoring
+________________________________________
+
+6. Data Flow
+
+1. Player makes a move in the game
+2. Game engine emits game:move event with move data
+3. FeatureExtractor records: timestamp, decision time, accuracy
+4. Player finishes game → game:end event emitted
+5. FeatureExtractor.endSession() calculates 15+ aggregate features
+6. MLClient sends features to FastAPI /api/ml/predict/skill
+7. Server checks TTL cache → HIT: return cached result (<1ms)
+8.                          → MISS: run model inference (~50ms), cache result
+9. Prediction returned to frontend
+10. Result modal displays: skill tier, performance index, confidence
+11. Session saved to localStorage for trend analysis
+________________________________________
+
+7. ML Feature Vector
+
+Features Extracted Per Game Session:
+  - avg_decision_time (ms): Average time between moves
+  - decision_time_variance: How variable thinking time is
+  - move_accuracy (0-1): Percentage of correct/valid moves
+  - error_rate (0-1): Percentage of mistakes
+  - pattern_success_rate (0-1): Success on strategic patterns
+  - consistency_score (0-1): Performance consistency (CV-based)
+  - optimal_play_rate (0-1): Percentage of optimal moves
+  - strategic_depth (0-1): Strategic planning quality
+  - memory_accuracy (0-1): Memory game recall rate
+  - logical_reasoning (0-1): Math/logic accuracy
+  - improvement_rate (-0.5 to 0.5): First-half vs second-half diff
+  - win_rate (0-1): Historical win ratio
+________________________________________
+
+8. ML Models
+
+8.1 Skill Predictor (Classification)
+  - Algorithm: Random Forest (100 trees)
+  - Input: 9 features → Output: 5 tiers [Novice, Beginner, Intermediate, Advanced, Expert]
+  - Current accuracy: 97.5% (on synthetic data)
+  - Training: 1000 synthetic samples
+
+8.2 Performance Estimator (Regression)
+  - Algorithm: Random Forest (100 trees)
+  - Input: 8 features → Output: Performance Index (0-100)
+  - Current R²: 0.871, RMSE: 7.69
+  - Training: Same 1000 synthetic samples
+
+8.3 Known Limitations
+  - Models trained on synthetic data (no real gameplay data yet)
+  - High accuracy is misleading — synthetic clusters are easily separable
+  - No probability calibration
+  - No sequential/temporal modeling
+  - See Future Roadmap for planned improvements
+________________________________________
+
+9. Scalability Design
+
+Current Capacity: ~8,000 requests/second (4 Uvicorn workers)
+
+Design Patterns Used:
+  - Singleton (ModelPool): Load models once, share across requests
+  - Cache-Aside (TTLCache): LRU cache with 60s TTL for predictions
+  - Token Bucket (RateLimiter): 100 req/min per IP
+  - Content Encoding: Gzip compression for responses >500 bytes
+  - Request Timing: X-Response-Time header on every response
+
+Scaling Path:
+  - Horizontal: Add more Uvicorn workers or instances
+  - Caching: Promote to Redis for distributed multi-instance caching
+  - Database: Add PostgreSQL for persistent session storage
+  - Queue: Add Celery for async batch processing
+________________________________________
+
+10. UI/UX Design
+
+•	Premium glassmorphism aesthetic with dark/light themes
+•	Framer Motion page transitions and component animations
+•	GSAP animated counters and number tickers
+•	Particle background effects
+•	Custom cursor follower
+•	Responsive design (mobile, tablet, desktop)
+•	Modern typography (Inter/Outfit from Google Fonts)
+________________________________________
+
+11. Ethics & Explainability
+
+•	Performance presented as "Performance Index" (non-clinical)
+•	Feature importance available for every prediction
+•	No personal or biometric data collected
+•	All data stored locally (localStorage)
+•	ML influences analytics only, never game outcomes
+________________________________________
+
+12. Future Roadmap
+
+Phase 1: Data Collection (Immediate)
+  - Add full gameplay logging (per-move, per-session, per-outcome)
+  - SQLite local database for structured data storage
+  - Collect 3,000-5,000 real gameplay sessions
+
+Phase 2: Model Upgrades (After Data Collection)
+  - Switch to LightGBM (better calibration, faster)
+  - Add probability calibration (isotonic regression)
+  - New features: move entropy, recovery rate, reaction time decay
+  - Cold start handling (Bayesian priors for new players)
+  - Retrain on real data
+
+Phase 3: Advanced ML (After 10K+ Sessions)
+  - LSTM/Transformer encoder on per-move sequences
+  - Multi-task learning (shared backbone for skill + performance)
+  - Game-type as categorical embedding (one universal model)
+  - A/B testing framework for model comparison
+
+Phase 4: Platform Features
+  - Real-time multiplayer via WebSockets
+  - AI opponents using reinforcement learning
+  - User accounts and cloud sync
+  - Cross-platform PWA deployment
+  - Leaderboards and social features
+________________________________________
+
+Document Version: 3.0
+Status: React + FastAPI Architecture
+Last Updated: March 2026
