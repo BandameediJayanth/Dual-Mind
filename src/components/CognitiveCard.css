@@ -145,3 +145,27 @@
     cursor: not-allowed;
     transform: none;
 }
+
+/* ============ MOBILE RESPONSIVE ============ */
+@media (max-width: 600px) {
+    .cognitive-card {
+        padding: 16px;
+        max-width: 100%;
+    }
+
+    .radar-chart {
+        max-width: 200px;
+    }
+
+    .card-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .radar-value {
+        font-size: 12px;
+    }
+
+    .radar-label {
+        font-size: 10px;
+    }
+}

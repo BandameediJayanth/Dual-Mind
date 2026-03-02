@@ -272,7 +272,7 @@ export class TicTacToe {
     this.moveCount++;
 
     // Emit move event for analytics (feature extraction only — does NOT trigger GameController)
-    this.eventBus?.emit("ttt:move", {
+    this.eventBus?.emit("game:move", {
       gameId: "tictactoe",
       player: this.currentPlayer === "X" ? 1 : 2,
       position: index,

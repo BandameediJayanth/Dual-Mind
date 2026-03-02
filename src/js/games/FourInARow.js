@@ -123,8 +123,20 @@ export class FourInARow {
         const row = this._getLowestEmptyRow(col);
         if (row === -1) return;
 
+        // Calculate decision time
+        const decisionTime = this.lastMoveTime ? Date.now() - this.lastMoveTime : Date.now() - (this.sessionStartTime || Date.now());
+        this.lastMoveTime = Date.now();
+
         this.board[row][col] = this.currentPlayer;
         this.moveCount++;
+
+        this.eventBus?.emit('game:move', {
+            gameId: 'fourinrow',
+            player: this.currentPlayer === 'red' ? 1 : 2,
+            position: { row, col },
+            timestamp: Date.now(),
+            decisionTime: decisionTime
+        });
 
         if (this._checkWin(row, col)) {
             this._updateBoard();
