@@ -32,10 +32,6 @@ export class DataLogger {
 
   /**
    * Create a placeholder session row so moves can reference it via FK.
-   * Called at the start of a game.
-   */
-  /**
-   * Create a placeholder session row so moves can reference it via FK.
    * Called at the start of a game. Waits for completion so moves don't race ahead.
    */
   async createSessionAsync(sessionId, gameId) {
@@ -54,10 +50,11 @@ export class DataLogger {
         },
       ]);
       if (error) {
-        // RLS policy may block inserts with the anon key — disable logging for this session
-        if (error.code === '42501') {
-          console.warn("Supabase: RLS policy blocked session insert. Data logging disabled for this session. "
-            + "Grant INSERT on 'sessions' to the anon role or use a service-role key.");
+        // RLS policy (42501) or auth (PGRST301 / HTTP 401) — disable logging for this session
+        if (error.code === "42501" || error.code === "PGRST301" || error.message?.includes('Unauthorized')) {
+          console.warn(
+            "Supabase: auth/RLS blocked session insert. Data logging disabled for this session.",
+          );
           this._loggingDisabled = true;
         } else {
           console.warn("Supabase createSession error:", error);
@@ -65,6 +62,7 @@ export class DataLogger {
       }
     } catch (err) {
       console.warn("Supabase createSession failed:", err);
+      this._loggingDisabled = true;
     }
   }
 
@@ -90,7 +88,7 @@ export class DataLogger {
         { onConflict: "id" },
       );
       if (error) {
-        if (error.code === '42501') {
+        if (error.code === "42501" || error.code === "PGRST301" || error.message?.includes('Unauthorized')) {
           this._loggingDisabled = true;
         } else {
           console.warn("Supabase logSession error:", error);

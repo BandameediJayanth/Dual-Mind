@@ -32,8 +32,9 @@ export class FeatureExtractor {
     this.sessionStartTime = Date.now();
     this.gameId = gameId;
 
-    // Create a placeholder session row in Supabase so move inserts don't violate FK
-    dataLogger.createSessionAsync(this.sessionId, gameId);
+    // Create a placeholder session row in Supabase so move inserts don't violate FK.
+    // Await so _loggingDisabled is set before any moves are logged.
+    dataLogger.createSessionAsync(this.sessionId, gameId).catch(() => {});
 
     console.log(
       `📊 Feature extraction started for ${gameId} (Session: ${this.sessionId})`,
