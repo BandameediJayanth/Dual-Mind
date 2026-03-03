@@ -211,7 +211,7 @@ export class DotsAndBoxes {
         },
         timestamp: Date.now(),
         decisionTime: 0,
-        isOptimal: madeBox,   // completed a box = optimal play
+        isOptimal: madeBox, // completed a box = optimal play
         isStrategic: madeBox,
       });
 

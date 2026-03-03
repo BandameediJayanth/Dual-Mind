@@ -227,8 +227,8 @@ export class WordChain {
           position: { wordIndex: player.index - 1, word: currentWord },
           timestamp: Date.now(),
           decisionTime: 0,
-          isOptimal: wasOptimal,   // got it right with no hint reveals
-          isStrategic: true,       // all correct words are strategic
+          isOptimal: wasOptimal, // got it right with no hint reveals
+          isStrategic: true, // all correct words are strategic
         });
 
         if (player.index >= player.chain.length) {

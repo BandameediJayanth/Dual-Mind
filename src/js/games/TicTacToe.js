@@ -325,6 +325,9 @@ export class TicTacToe {
       boardElement.removeEventListener("click", this.boundClickHandler);
     }
 
+    // Store element reference for cleanup
+    this.boardElement = boardElement;
+
     // Create new bound handler
     this.boundClickHandler = (e) => {
       const cell = e.target.closest(".ttt-cell");
@@ -340,6 +343,15 @@ export class TicTacToe {
     };
 
     boardElement.addEventListener("click", this.boundClickHandler);
+  }
+
+  cleanup() {
+    if (this.boundClickHandler && this.boardElement) {
+      this.boardElement.removeEventListener("click", this.boundClickHandler);
+    }
+    this.boundClickHandler = null;
+    this.boardElement = null;
+    this.gameActive = false;
   }
 
   handleCellClick(cell) {

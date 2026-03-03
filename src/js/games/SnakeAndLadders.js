@@ -466,7 +466,7 @@ export class SnakeAndLadders {
       self.moveCount++;
 
       eventBus?.emit("game:move", {
-        gameId: "snakeladders",
+        gameId: "snakeandladders",
         player: currentPlayer + 1,
         position: {
           roll,
@@ -475,7 +475,7 @@ export class SnakeAndLadders {
         },
         timestamp: Date.now(),
         decisionTime: 0,
-        isOptimal: false,    // pure luck game — no strategic control over dice
+        isOptimal: false, // pure luck game — no strategic control over dice
         isStrategic: false,
       });
 
@@ -511,7 +511,7 @@ export class SnakeAndLadders {
         winnerEl.style.display = "block";
         const duration = Date.now() - (self.sessionStartTime || Date.now());
         eventBus?.emit("game:end", {
-          gameId: "snakeladders",
+          gameId: "snakeandladders",
           winner,
           winReason: `Player ${winner} reached 100!`,
           moveCount: self.moveCount,

@@ -204,7 +204,7 @@ export class ColorWars {
       position: { row, col, dots: cell.dots },
       timestamp: Date.now(),
       decisionTime: 0,
-      isOptimal: willExpand,             // triggering an expansion = optimal
+      isOptimal: willExpand, // triggering an expansion = optimal
       isStrategic: willExpand || cell.dots >= 3, // building toward explosion
     });
     if (cell.dots >= 4) {

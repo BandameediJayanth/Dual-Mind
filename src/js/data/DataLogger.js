@@ -41,6 +41,11 @@ export class DataLogger {
    */
   createSessionAsync(sessionId, gameId) {
     if (!this.supabase) return;
+    // Respect user consent — if explicitly declined, disable Supabase logging for this session
+    if (localStorage.getItem("dualmind_data_consent") === "false") {
+      this._loggingDisabled = true;
+      return;
+    }
     // Store the promise — logMoveAsync / logSessionAsync will await it
     this._sessionReady = this._insertSession(sessionId, gameId);
     return this._sessionReady;

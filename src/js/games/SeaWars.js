@@ -201,7 +201,7 @@ export class SeaWars {
         timestamp: Date.now(),
         decisionTime: 0,
         isHit,
-        isOptimal: isHit,    // hitting a ship = optimal attack
+        isOptimal: isHit, // hitting a ship = optimal attack
         isStrategic: isHit,
       });
 

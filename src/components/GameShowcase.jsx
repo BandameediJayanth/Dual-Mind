@@ -1,18 +1,88 @@
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import './GameShowcase.css';
+import React, { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import "./GameShowcase.css";
 
 const games = [
-  { id: 'tictactoe', name: 'Tic Tac Toe', icon: '❌', category: 'Strategy', color: '#e94560' },
-  { id: 'fourinarow', name: 'Four in a Row', icon: '🔴', category: 'Strategy', color: '#533483' },
-  { id: 'checkers', name: 'Checkers', icon: '♟️', category: 'Board', color: '#0f3460' },
-  { id: 'dotsandboxes', name: 'Dots & Boxes', icon: '🔲', category: 'Strategy', color: '#06b6d4' },
-  { id: 'memorymatch', name: 'Memory Match', icon: '🧠', category: 'Memory', color: '#8b5cf6' },
-  { id: 'wordchain', name: 'Word Chain', icon: '🔤', category: 'Language', color: '#10b981' },
-  { id: 'ludo', name: 'Ludo', icon: '🎲', category: 'Board', color: '#f59e0b' },
-  { id: 'snakeandladders', name: 'Snake & Ladders', icon: '🐍', category: 'Board', color: '#ef4444' },
-  { id: 'colorwars', name: 'Color Wars', icon: '🎨', category: 'Strategy', color: '#ec4899' },
-  { id: 'seawars', name: 'Sea Wars', icon: '🚢', category: 'Strategy', color: '#3b82f6' },
+  {
+    id: "tictactoe",
+    name: "Tic Tac Toe",
+    icon: "❌",
+    category: "Strategy",
+    difficulty: "Easy",
+    color: "#e94560",
+  },
+  {
+    id: "fourinarow",
+    name: "Four in a Row",
+    icon: "🔴",
+    category: "Strategy",
+    difficulty: "Medium",
+    color: "#533483",
+  },
+  {
+    id: "checkers",
+    name: "Checkers",
+    icon: "♟️",
+    category: "Board",
+    difficulty: "Hard",
+    color: "#0f3460",
+  },
+  {
+    id: "dotsandboxes",
+    name: "Dots & Boxes",
+    icon: "🔲",
+    category: "Strategy",
+    difficulty: "Medium",
+    color: "#06b6d4",
+  },
+  {
+    id: "memorymatch",
+    name: "Memory Match",
+    icon: "🧠",
+    category: "Memory",
+    difficulty: "Easy",
+    color: "#8b5cf6",
+  },
+  {
+    id: "wordchain",
+    name: "Word Chain",
+    icon: "🔤",
+    category: "Language",
+    difficulty: "Medium",
+    color: "#10b981",
+  },
+  {
+    id: "ludo",
+    name: "Ludo",
+    icon: "🎲",
+    category: "Board",
+    difficulty: "Easy",
+    color: "#f59e0b",
+  },
+  {
+    id: "snakeandladders",
+    name: "Snake & Ladders",
+    icon: "🐍",
+    category: "Board",
+    difficulty: "Easy",
+    color: "#ef4444",
+  },
+  {
+    id: "colorwars",
+    name: "Color Wars",
+    icon: "🎨",
+    category: "Strategy",
+    difficulty: "Medium",
+    color: "#ec4899",
+  },
+  {
+    id: "seawars",
+    name: "Sea Wars",
+    icon: "🚢",
+    category: "Strategy",
+    difficulty: "Medium",
+    color: "#3b82f6",
+  },
 ];
 
 const containerAnim = {
@@ -54,7 +124,7 @@ export default function GameShowcase({ onGameSelect }) {
                 scale: 1.02,
                 rotateX: 2,
                 rotateY: -2,
-                transition: { duration: 0.2, ease: 'easeOut' },
+                transition: { duration: 0.2, ease: "easeOut" },
               }}
               whileTap={{
                 scale: 0.98,
@@ -62,14 +132,25 @@ export default function GameShowcase({ onGameSelect }) {
                 rotateY: 0,
                 transition: { duration: 0.1 },
               }}
-              style={{ '--card-accent': game.color, cursor: 'pointer', perspective: '1000px' }}
+              style={{
+                "--card-accent": game.color,
+                cursor: "pointer",
+                perspective: "1000px",
+              }}
               onClick={() => onGameSelect && onGameSelect(game.id)}
             >
               <div className="card-icon-wrap">
                 <span className="card-icon">{game.icon}</span>
               </div>
               <div className="card-info">
-                <span className="card-category">{game.category}</span>
+                <div className="card-meta">
+                  <span className="card-category">{game.category}</span>
+                  <span
+                    className={`card-difficulty difficulty-${game.difficulty.toLowerCase()}`}
+                  >
+                    {game.difficulty}
+                  </span>
+                </div>
                 <h3 className="card-name">{game.name}</h3>
               </div>
               <div className="card-glow" />

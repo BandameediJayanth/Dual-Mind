@@ -373,7 +373,7 @@ export class FeatureExtractor {
 
     switch (this.gameId) {
       case "tictactoe":
-      case "fourinrow":
+      case "fourinarow":
       case "reversi":
       case "checkers":
         features.strategicDepth = this.calculateStrategicDepth();
@@ -416,7 +416,7 @@ export class FeatureExtractor {
         features.logicalReasoning = this.calculateLogicalReasoning();
         break;
 
-      case "snakeladders":
+      case "snakeandladders":
         // Pure luck — only timing and consistency carry signal
         break;
     }

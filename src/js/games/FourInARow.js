@@ -143,7 +143,7 @@ export class FourInARow {
     this.moveCount++;
 
     this.eventBus?.emit("game:move", {
-      gameId: "fourinrow",
+      gameId: "fourinarow",
       player: this.currentPlayer === "red" ? 1 : 2,
       position: { row, col },
       timestamp: Date.now(),
@@ -324,7 +324,7 @@ export class FourInARow {
 
     const duration = Date.now() - (this.sessionStartTime || Date.now());
     this.eventBus?.emit("game:end", {
-      gameId: "fourinrow",
+      gameId: "fourinarow",
       winner,
       winReason:
         result === "win"

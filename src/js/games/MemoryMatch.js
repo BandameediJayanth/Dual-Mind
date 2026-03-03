@@ -176,7 +176,7 @@ export class MemoryMatch {
       },
       timestamp: Date.now(),
       decisionTime: 0,
-      isOptimal: isMatch,      // remembered the matching card's position
+      isOptimal: isMatch, // remembered the matching card's position
       isStrategic: isMatch,
     });
 
