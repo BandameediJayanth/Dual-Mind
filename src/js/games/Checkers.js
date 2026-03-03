@@ -171,9 +171,17 @@ export class Checkers {
                 return;
             }
             const piece = board[r][c];
-            if (piece && piece.color === turn) { selected = {row:r,col:c}; render(); return; }
+            if (piece && piece.color === turn) {
+                // If forced captures exist, only allow selecting a piece that has a capture
+                if (forcedCaptureSquares.length > 0 && !forcedCaptureSquares.some(s => s.r===r && s.c===c)) return;
+                selected = {row:r,col:c}; render(); return;
+            }
             if (selected) {
-                const valid = computeValidMoves(selected.row, selected.col);
+                let valid = computeValidMoves(selected.row, selected.col);
+                // If forced captures exist, only allow capture moves
+                if (forcedCaptureSquares.length > 0) {
+                    valid = valid.filter(m => m.capture);
+                }
                 const chosen = valid.find(m => m.to.r===r && m.to.c===c);
                 if (chosen) { performMove(chosen); }
                 else { selected = null; clearHighlights(); render(); }

@@ -182,6 +182,10 @@ export class SnakeAndLadders {
 
         const wrapper = document.createElement('div');
         wrapper.className = 'snl-wrapper';
+        let positions = [0, 0]; // 0-indexed players
+        let currentPlayer = 0;
+        let gameOver = false;
+
         wrapper.innerHTML = `
             <div class="snl-main">
                 <div class="snl-board-container">
@@ -194,16 +198,13 @@ export class SnakeAndLadders {
                         <div class="snl-dice" id="snl-dice">🎲</div>
                         <div class="snl-log" id="snl-log">Waiting for roll...</div>
                     </div>
-                    ${!gameOver ? '<button id="snl-roll" class="snl-btn btn-primary">Roll Dice</button>' : ''}
+                    <button id="snl-roll" class="snl-btn btn-primary">Roll Dice</button>
+                    <button id="snl-restart" class="snl-btn btn-primary" style="display:none;">New Game</button>
                 </div>
             </div>
             <div class="snl-winner-banner" id="snl-winner"></div>
         `;
         this.boardElement.appendChild(wrapper);
-
-        let positions = [0, 0]; // 0-indexed players
-        let currentPlayer = 0;
-        let gameOver = false;
 
         const boardEl = wrapper.querySelector('#snl-board');
         const diceEl = wrapper.querySelector('#snl-dice');
@@ -226,6 +227,8 @@ export class SnakeAndLadders {
             logEl.innerHTML = '';
             winnerEl.style.display = 'none';
             rollBtn.disabled = false;
+            rollBtn.style.display = '';
+            if (restartBtn) restartBtn.style.display = 'none';
             renderBoard();
             updateCards();
         }
@@ -460,6 +463,8 @@ export class SnakeAndLadders {
             if (pos === 100) {
                 gameOver = true;
                 rollBtn.disabled = true;
+                rollBtn.style.display = 'none';
+                if (restartBtn) restartBtn.style.display = '';
                 const winner = currentPlayer + 1;
                 winnerEl.textContent = `🎉 Player ${winner} Wins!`;
                 winnerEl.style.display = 'block';

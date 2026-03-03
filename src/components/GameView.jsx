@@ -88,6 +88,10 @@ export default function GameView({ gameId, onBack }) {
 
     // Listen for game end
     eventBus.on('game:end', async (data) => {
+      // Normalize result field — some games only emit `winner`, not `result`
+      if (!data.result) {
+        data.result = (data.winner && data.winner !== 'draw' && data.winner !== null) ? 'win' : 'draw';
+      }
       console.log('🏆 Game ended:', data);
       setGameResult(data);
       setShowResultModal(true);
@@ -200,10 +204,10 @@ export default function GameView({ gameId, onBack }) {
             >
               <button className="btn-close-modal" onClick={() => setShowResultModal(false)} aria-label="Close">✖</button>
               <div className="result-icon">
-                {gameResult.result === 'win' ? '🏆' : '🤝'}
+                {gameResult.winner && gameResult.winner !== 'draw' && gameResult.winner !== null ? '🏆' : '🤝'}
               </div>
               <h2 className="result-title">
-                {gameResult.result === 'win'
+                {gameResult.winner && gameResult.winner !== 'draw' && gameResult.winner !== null
                   ? `Player ${gameResult.winner} Wins!`
                   : "It's a Draw!"}
               </h2>

@@ -38,9 +38,7 @@ export default defineConfig({
     alias: {
       "@": "/src",
       "@games": "/src/js/games",
-      "@core": "/src/js/core",
       "@ml": "/src/js/ml",
-      "@ui": "/src/js/ui",
     },
   },
 });

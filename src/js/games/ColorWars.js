@@ -16,6 +16,9 @@ export class ColorWars {
         this.playerFirstMoves = { 1: false, 2: false };
         this.gameEnded = false;
         this.maxExpansionDepth = 10;
+        this._expanding = false;
+        this._pendingExpansions = 0;
+        this._afterExpansionCallback = null;
     }
 
     async init() {
@@ -164,20 +167,34 @@ export class ColorWars {
     _placeDot(row, col) {
         const cell = this.grid[row][col];
         if (!cell || cell.owner !== this.currentPlayer) return;
+        if (this._expanding) return; // Block input during chain reaction
         cell.dots++;
         this.playerScores[this.currentPlayer]++;
         this.moveCount++;
         if (cell.dots >= 4) {
+            this._expanding = true;
             this._expandTerritory(row, col);
             cell.dots = 1;
+            // Delay win check and turn switch until chain reactions finish
+            this._scheduleAfterExpansion(() => {
+                this._expanding = false;
+                this._updateDisplay();
+                this._checkWinCondition();
+                this._switchPlayer();
+            });
+        } else {
+            this._updateDisplay();
+            this._checkWinCondition();
+            this._switchPlayer();
         }
-        this._updateDisplay();
-        this._checkWinCondition();
-        this._switchPlayer();
     }
 
     _expandTerritory(row, col, depth = 0) {
-        if (depth > this.maxExpansionDepth) return;
+        if (depth > this.maxExpansionDepth) {
+            this._pendingExpansions--;
+            this._tryAfterExpansion();
+            return;
+        }
         const directions = [[-1,0],[1,0],[0,-1],[0,1]];
         const currentPlayer = this.grid[row][col].owner;
         const cellsToExpand = [];
@@ -206,6 +223,8 @@ export class ColorWars {
         this._updateDisplay();
 
         if (cellsToExpand.length > 0) {
+            // Track how many new expansions we're scheduling (replace current one)
+            this._pendingExpansions += cellsToExpand.length - 1; // -1 because current one is being consumed
             setTimeout(() => {
                 for (const [er, ec] of cellsToExpand) this.grid[er][ec].dots = 1;
                 this._updateGridDisplay();
@@ -213,6 +232,26 @@ export class ColorWars {
                     setTimeout(() => this._expandTerritory(er, ec, depth + 1), i * 300);
                 });
             }, 500);
+        } else {
+            // This branch is a leaf — decrement pending counter
+            this._pendingExpansions--;
+            this._tryAfterExpansion();
+        }
+    }
+
+    /**
+     * Schedule a callback to run after all chain-reaction expansions complete.
+     */
+    _scheduleAfterExpansion(callback) {
+        this._pendingExpansions = 1; // Start with 1 for the initial expansion
+        this._afterExpansionCallback = callback;
+    }
+
+    _tryAfterExpansion() {
+        if (this._pendingExpansions <= 0 && this._afterExpansionCallback) {
+            const cb = this._afterExpansionCallback;
+            this._afterExpansionCallback = null;
+            cb();
         }
     }
 

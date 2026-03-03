@@ -20,8 +20,9 @@ export class WordChain {
         if (boardElement) this.boardElement = boardElement;
         if (!this.boardElement) return;
 
-        // If wrapper exists, game is running
-        if (this.boardElement.querySelector('.wc-wrapper')) return;
+        // Clear previous game if wrapper exists (allows restart)
+        const existingWrapper = this.boardElement.querySelector('.wc-wrapper');
+        if (existingWrapper) existingWrapper.remove();
 
         this.boardElement.innerHTML = '';
         this._addStyles();

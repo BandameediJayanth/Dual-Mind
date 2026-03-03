@@ -149,7 +149,8 @@ export class SeaWars {
                 } else {
                     placingShips = false;
                     currentPlayer = 1;
-                    // Hide ships from view (remove ship class from p2 grid)
+                    // Hide ships from view (remove ship class from both grids)
+                    Array.from(player1Grid.children).forEach(c => c.classList.remove('ship'));
                     Array.from(player2Grid.children).forEach(c => c.classList.remove('ship'));
                     info.textContent = 'All ships placed! Player 1: Attack Player 2\'s grid!';
                 }
