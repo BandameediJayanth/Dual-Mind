@@ -3,36 +3,36 @@
  * Full checkers game with forced captures, king pieces, and chain jumps
  */
 export class Checkers {
-    constructor(eventBus) {
-        this.eventBus = eventBus;
-        this.boardElement = null;
-        this.engine = null;
-        this.sessionStartTime = null;
-        this.moveCount = 0;
+  constructor(eventBus) {
+    this.eventBus = eventBus;
+    this.boardElement = null;
+    this.engine = null;
+    this.sessionStartTime = null;
+    this.moveCount = 0;
+  }
+
+  async init() {
+    this.sessionStartTime = Date.now();
+    this.moveCount = 0;
+    console.log("Checkers initialized");
+  }
+
+  render(ctx, boardElement) {
+    if (boardElement) this.boardElement = boardElement;
+    if (!this.boardElement) return;
+
+    // If wrapper exists, the game is already running. Do not re-init.
+    if (this.boardElement.querySelector(".checkers-wrapper")) {
+      return;
     }
 
-    async init() {
-        this.sessionStartTime = Date.now();
-        this.moveCount = 0;
-        console.log('Checkers initialized');
-    }
+    this.boardElement.innerHTML = "";
 
-    render(ctx, boardElement) {
-        if (boardElement) this.boardElement = boardElement;
-        if (!this.boardElement) return;
+    // Inject styles
+    this._addStyles();
 
-        // If wrapper exists, the game is already running. Do not re-init.
-        if (this.boardElement.querySelector('.checkers-wrapper')) {
-            return;
-        }
-
-        this.boardElement.innerHTML = '';
-
-        // Inject styles
-        this._addStyles();
-
-        // Build the game HTML
-        this.boardElement.innerHTML = `
+    // Build the game HTML
+    this.boardElement.innerHTML = `
             <div class="checkers-wrapper">
                 <div class="checkers-header">
                     <div class="checkers-turn">
@@ -51,14 +51,14 @@ export class Checkers {
             </div>
         `;
 
-        this._initEngine();
-    }
+    this._initEngine();
+  }
 
-    _addStyles() {
-        if (document.getElementById('ck-styles')) return;
-        const style = document.createElement('style');
-        style.id = 'ck-styles';
-        style.textContent = `
+  _addStyles() {
+    if (document.getElementById("ck-styles")) return;
+    const style = document.createElement("style");
+    style.id = "ck-styles";
+    style.textContent = `
             .checkers-wrapper { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem; font-family: inherit; }
             .checkers-header { display: flex; align-items: center; gap: 1rem; }
             .checkers-turn { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
@@ -85,246 +85,364 @@ export class Checkers {
             .ck-popup-inner { background: white; border-radius: 16px; padding: 2rem; text-align: center; display: flex; flex-direction: column; gap: 1rem; }
             .ck-winner-text { font-size: 1.5rem; font-weight: 700; }
         `;
-        document.head.appendChild(style);
+    document.head.appendChild(style);
+  }
+
+  _initEngine() {
+    const wrapper = this.boardElement.querySelector(".checkers-wrapper");
+    const boardGrid = this.boardElement.querySelector("#ck-boardGrid");
+    const turnToken = this.boardElement.querySelector("#ck-turnToken");
+    const turnLabel = this.boardElement.querySelector("#ck-turnLabel");
+    const resetBtn = this.boardElement.querySelector("#ck-resetBtn");
+    const winnerPopup = this.boardElement.querySelector("#ck-winnerPopup");
+    const winnerText = this.boardElement.querySelector("#ck-winnerText");
+    const popupResetBtn = this.boardElement.querySelector("#ck-popupResetBtn");
+
+    const eventBus = this.eventBus;
+    const self = this;
+
+    let board = [];
+    let selected = null;
+    let forcedCaptureSquares = [];
+    let turn = "red";
+    let chaining = false;
+
+    resetBtn.addEventListener("click", init);
+    popupResetBtn.addEventListener("click", () => {
+      winnerPopup.classList.add("hidden");
+      init();
+    });
+
+    init();
+
+    function init() {
+      self.moveCount = 0;
+      self.sessionStartTime = Date.now();
+      createModel();
+      selected = null;
+      chaining = false;
+      forcedCaptureSquares = computeForcedCaptures(turn);
+      render();
+      updateTurnToken();
     }
 
-    _initEngine() {
-        const wrapper = this.boardElement.querySelector('.checkers-wrapper');
-        const boardGrid = this.boardElement.querySelector('#ck-boardGrid');
-        const turnToken = this.boardElement.querySelector('#ck-turnToken');
-        const turnLabel = this.boardElement.querySelector('#ck-turnLabel');
-        const resetBtn = this.boardElement.querySelector('#ck-resetBtn');
-        const winnerPopup = this.boardElement.querySelector('#ck-winnerPopup');
-        const winnerText = this.boardElement.querySelector('#ck-winnerText');
-        const popupResetBtn = this.boardElement.querySelector('#ck-popupResetBtn');
-
-        const eventBus = this.eventBus;
-        const self = this;
-
-        let board = [];
-        let selected = null;
-        let forcedCaptureSquares = [];
-        let turn = 'red';
-        let chaining = false;
-
-        resetBtn.addEventListener('click', init);
-        popupResetBtn.addEventListener('click', () => {
-            winnerPopup.classList.add('hidden');
-            init();
-        });
-
-        init();
-
-        function init() {
-            self.moveCount = 0;
-            self.sessionStartTime = Date.now();
-            createModel();
-            selected = null;
-            chaining = false;
-            forcedCaptureSquares = computeForcedCaptures(turn);
-            render();
-            updateTurnToken();
+    function createModel() {
+      board = Array.from({ length: 8 }, () => Array(8).fill(null));
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if ((r + c) % 2 === 1) {
+            if (r < 3) board[r][c] = { color: "blue", king: false };
+            else if (r > 4) board[r][c] = { color: "red", king: false };
+          }
         }
-
-        function createModel() {
-            board = Array.from({length:8}, () => Array(8).fill(null));
-            for (let r=0; r<8; r++) {
-                for (let c=0; c<8; c++) {
-                    if ((r+c)%2 === 1) {
-                        if (r < 3) board[r][c] = {color:'blue', king:false};
-                        else if (r > 4) board[r][c] = {color:'red', king:false};
-                    }
-                }
-            }
-            forcedCaptureSquares = computeForcedCaptures(turn);
-        }
-
-        function render() {
-            boardGrid.innerHTML = '';
-            forcedCaptureSquares = computeForcedCaptures(turn);
-            for (let r=0; r<8; r++) {
-                for (let c=0; c<8; c++) {
-                    const sq = document.createElement('div');
-                    sq.className = 'square ' + (((r+c)%2===0) ? 'light' : 'dark');
-                    sq.dataset.row = r; sq.dataset.col = c;
-                    const piece = board[r][c];
-                    if (piece) {
-                        const p = document.createElement('div');
-                        p.className = 'piece ' + piece.color + (piece.king ? ' king' : '');
-                        if (forcedCaptureSquares.some(s => s.r===r && s.c===c)) sq.classList.add('must-capture');
-                        if (selected && selected.row===r && selected.col===c) p.classList.add('selected');
-                        sq.appendChild(p);
-                    }
-                    sq.addEventListener('click', () => onSquareClick(r,c));
-                    boardGrid.appendChild(sq);
-                }
-            }
-            if (selected) showMoves(selected.row, selected.col);
-            checkWinner();
-        }
-
-        function onSquareClick(r,c) {
-            if (chaining) {
-                const captureMoves = getCaptureMovesForPiece(selected.row, selected.col, board[selected.row][selected.col].king);
-                const move = captureMoves.find(m => m.to.r===r && m.to.c===c);
-                if (move) { performMove(move); return; }
-                return;
-            }
-            const piece = board[r][c];
-            if (piece && piece.color === turn) {
-                // If forced captures exist, only allow selecting a piece that has a capture
-                if (forcedCaptureSquares.length > 0 && !forcedCaptureSquares.some(s => s.r===r && s.c===c)) return;
-                selected = {row:r,col:c}; render(); return;
-            }
-            if (selected) {
-                let valid = computeValidMoves(selected.row, selected.col);
-                // If forced captures exist, only allow capture moves
-                if (forcedCaptureSquares.length > 0) {
-                    valid = valid.filter(m => m.capture);
-                }
-                const chosen = valid.find(m => m.to.r===r && m.to.c===c);
-                if (chosen) { performMove(chosen); }
-                else { selected = null; clearHighlights(); render(); }
-            }
-        }
-
-        function computeForcedCaptures(playerColor) {
-            const res = [];
-            for (let r=0; r<8; r++) for (let c=0; c<8; c++) {
-                const p = board[r][c];
-                if (p && p.color===playerColor && pieceHasCapture(r,c,p.king)) res.push({r,c});
-            }
-            return res;
-        }
-
-        function pieceHasCapture(r,c,isKing) {
-            const piece = board[r][c]; if (!piece) return false;
-            const dirs = getDirs(piece.color, isKing);
-            for (const [dr,dc] of dirs) {
-                const midR=r+dr, midC=c+dc, toR=r+2*dr, toC=c+2*dc;
-                if (inBounds(toR,toC) && inBounds(midR,midC) && board[toR][toC]===null) {
-                    const mid = board[midR][midC];
-                    if (mid && mid.color !== piece.color) return true;
-                }
-            }
-            return false;
-        }
-
-        function getDirs(color, isKing) {
-            const forward = color==='red' ? [[-1,-1],[-1,1]] : [[1,-1],[1,1]];
-            const backward = color==='red' ? [[1,-1],[1,1]] : [[-1,-1],[-1,1]];
-            return isKing ? forward.concat(backward) : forward;
-        }
-
-        function computeValidMoves(r,c) {
-            const piece = board[r][c]; if (!piece) return [];
-            const dirs = getDirs(piece.color, piece.king);
-            const moves = [];
-            for (const [dr,dc] of dirs) {
-                const midR=r+dr, midC=c+dc, toR=r+2*dr, toC=c+2*dc;
-                if (inBounds(toR,toC) && inBounds(midR,midC) && board[toR][toC]===null) {
-                    const mid = board[midR][midC];
-                    if (mid && mid.color !== piece.color) moves.push({from:{r,c}, to:{r:toR,c:toC}, captures:[{r:midR,c:midC}]});
-                }
-            }
-            for (const [dr,dc] of dirs) {
-                const toR=r+dr, toC=c+dc;
-                if (inBounds(toR,toC) && board[toR][toC]===null) moves.push({from:{r,c}, to:{r:toR,c:toC}, captures:[]});
-            }
-            return moves;
-        }
-
-        function getCaptureMovesForPiece(r,c,isKing) {
-            const piece = board[r][c]; if (!piece) return [];
-            const dirs = getDirs(piece.color, isKing);
-            const results = [];
-            for (const [dr,dc] of dirs) {
-                const midR=r+dr, midC=c+dc, toR=r+2*dr, toC=c+2*dc;
-                if (inBounds(toR,toC) && inBounds(midR,midC) && board[toR][toC]===null) {
-                    const mid = board[midR][midC];
-                    if (mid && mid.color !== piece.color) results.push({from:{r,c}, to:{r:toR,c:toC}, captures:[{r:midR,c:midC}]});
-                }
-            }
-            return results;
-        }
-
-        function performMove(move) {
-            const {from, to, captures} = move;
-            const piece = board[from.r][from.c]; if (!piece) return;
-            board[to.r][to.c] = piece; board[from.r][from.c] = null;
-            if (captures && captures.length) for (const cap of captures) board[cap.r][cap.c] = null;
-            if (piece.color==='red' && to.r===0) piece.king = true;
-            if (piece.color==='blue' && to.r===7) piece.king = true;
-            self.moveCount++;
-            if (captures && captures.length) {
-                const more = pieceHasCapture(to.r, to.c, piece.king);
-                if (more) { selected = {row:to.r, col:to.c}; chaining = true; render(); return; }
-            }
-            chaining = false; selected = null;
-            turn = (turn==='red') ? 'blue' : 'red';
-            forcedCaptureSquares = computeForcedCaptures(turn);
-            updateTurnToken(); render();
-        }
-
-        function showMoves(r,c) {
-            clearHighlights();
-            const moves = computeValidMoves(r,c);
-            moves.forEach(m => {
-                const el = getSquareEl(m.to.r, m.to.c);
-                if (m.captures && m.captures.length) el.classList.add('capture-target');
-                else el.classList.add('move-target');
-            });
-        }
-
-        function getSquareEl(r,c) { return boardGrid.children[r*8+c]; }
-        function inBounds(r,c) { return r>=0 && r<8 && c>=0 && c<8; }
-
-        function clearHighlights() {
-            Array.from(boardGrid.children).forEach(ch => ch.classList.remove('move-target','capture-target','must-capture'));
-            forcedCaptureSquares.forEach(s => { const el=getSquareEl(s.r,s.c); if(el) el.classList.add('must-capture'); });
-        }
-
-        function updateTurnToken() {
-            turnToken.className = 'token ' + turn;
-            turnLabel.textContent = turn === 'red' ? "Red's Turn" : "Blue's Turn";
-        }
-
-        function getAllPieces(color) {
-            const pieces = [];
-            for (let r=0; r<8; r++) for (let c=0; c<8; c++) if (board[r][c] && board[r][c].color===color) pieces.push({r,c});
-            return pieces;
-        }
-
-        function hasAnyMoves(color) {
-            return getAllPieces(color).some(p => computeValidMoves(p.r,p.c).length > 0);
-        }
-
-        function checkWinner() {
-            const redPieces = getAllPieces('red');
-            const bluePieces = getAllPieces('blue');
-            if (redPieces.length===0) { showWinner('Blue Wins! 🔵'); return; }
-            if (bluePieces.length===0) { showWinner('Red Wins! 🔴'); return; }
-            if (!hasAnyMoves('red')) { showWinner('Blue Wins! 🔵'); return; }
-            if (!hasAnyMoves('blue')) { showWinner('Red Wins! 🔴'); return; }
-        }
-
-        function showWinner(text) {
-            winnerText.textContent = text;
-            winnerPopup.classList.remove('hidden');
-            const winner = text.includes('Red') ? 1 : 2;
-            const duration = Date.now() - (self.sessionStartTime || Date.now());
-            eventBus?.emit('game:end', {
-                gameId: 'checkers',
-                winner,
-                winReason: text,
-                moveCount: self.moveCount,
-                sessionDuration: duration,
-                scores: { 1: winner === 1 ? 1 : 0, 2: winner === 2 ? 1 : 0 }
-            });
-        }
+      }
+      forcedCaptureSquares = computeForcedCaptures(turn);
     }
 
-    getState() { return { currentPlayer: 1, gameActive: true }; }
-    makeMove() { return { valid: false }; }
-    cleanup() { if (this.boardElement) this.boardElement.innerHTML = ''; }
+    function render() {
+      boardGrid.innerHTML = "";
+      forcedCaptureSquares = computeForcedCaptures(turn);
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const sq = document.createElement("div");
+          sq.className = "square " + ((r + c) % 2 === 0 ? "light" : "dark");
+          sq.dataset.row = r;
+          sq.dataset.col = c;
+          const piece = board[r][c];
+          if (piece) {
+            const p = document.createElement("div");
+            p.className = "piece " + piece.color + (piece.king ? " king" : "");
+            if (forcedCaptureSquares.some((s) => s.r === r && s.c === c))
+              sq.classList.add("must-capture");
+            if (selected && selected.row === r && selected.col === c)
+              p.classList.add("selected");
+            sq.appendChild(p);
+          }
+          sq.addEventListener("click", () => onSquareClick(r, c));
+          boardGrid.appendChild(sq);
+        }
+      }
+      if (selected) showMoves(selected.row, selected.col);
+      checkWinner();
+    }
+
+    function onSquareClick(r, c) {
+      if (chaining) {
+        const captureMoves = getCaptureMovesForPiece(
+          selected.row,
+          selected.col,
+          board[selected.row][selected.col].king,
+        );
+        const move = captureMoves.find((m) => m.to.r === r && m.to.c === c);
+        if (move) {
+          performMove(move);
+          return;
+        }
+        return;
+      }
+      const piece = board[r][c];
+      if (piece && piece.color === turn) {
+        // If forced captures exist, only allow selecting a piece that has a capture
+        if (
+          forcedCaptureSquares.length > 0 &&
+          !forcedCaptureSquares.some((s) => s.r === r && s.c === c)
+        )
+          return;
+        selected = { row: r, col: c };
+        render();
+        return;
+      }
+      if (selected) {
+        let valid = computeValidMoves(selected.row, selected.col);
+        // If forced captures exist, only allow capture moves
+        if (forcedCaptureSquares.length > 0) {
+          valid = valid.filter((m) => m.captures && m.captures.length > 0);
+        }
+        const chosen = valid.find((m) => m.to.r === r && m.to.c === c);
+        if (chosen) {
+          performMove(chosen);
+        } else {
+          selected = null;
+          clearHighlights();
+          render();
+        }
+      }
+    }
+
+    function computeForcedCaptures(playerColor) {
+      const res = [];
+      for (let r = 0; r < 8; r++)
+        for (let c = 0; c < 8; c++) {
+          const p = board[r][c];
+          if (p && p.color === playerColor && pieceHasCapture(r, c, p.king))
+            res.push({ r, c });
+        }
+      return res;
+    }
+
+    function pieceHasCapture(r, c, isKing) {
+      const piece = board[r][c];
+      if (!piece) return false;
+      const dirs = getDirs(piece.color, isKing);
+      for (const [dr, dc] of dirs) {
+        const midR = r + dr,
+          midC = c + dc,
+          toR = r + 2 * dr,
+          toC = c + 2 * dc;
+        if (
+          inBounds(toR, toC) &&
+          inBounds(midR, midC) &&
+          board[toR][toC] === null
+        ) {
+          const mid = board[midR][midC];
+          if (mid && mid.color !== piece.color) return true;
+        }
+      }
+      return false;
+    }
+
+    function getDirs(color, isKing) {
+      const forward =
+        color === "red"
+          ? [
+              [-1, -1],
+              [-1, 1],
+            ]
+          : [
+              [1, -1],
+              [1, 1],
+            ];
+      const backward =
+        color === "red"
+          ? [
+              [1, -1],
+              [1, 1],
+            ]
+          : [
+              [-1, -1],
+              [-1, 1],
+            ];
+      return isKing ? forward.concat(backward) : forward;
+    }
+
+    function computeValidMoves(r, c) {
+      const piece = board[r][c];
+      if (!piece) return [];
+      const dirs = getDirs(piece.color, piece.king);
+      const moves = [];
+      for (const [dr, dc] of dirs) {
+        const midR = r + dr,
+          midC = c + dc,
+          toR = r + 2 * dr,
+          toC = c + 2 * dc;
+        if (
+          inBounds(toR, toC) &&
+          inBounds(midR, midC) &&
+          board[toR][toC] === null
+        ) {
+          const mid = board[midR][midC];
+          if (mid && mid.color !== piece.color)
+            moves.push({
+              from: { r, c },
+              to: { r: toR, c: toC },
+              captures: [{ r: midR, c: midC }],
+            });
+        }
+      }
+      for (const [dr, dc] of dirs) {
+        const toR = r + dr,
+          toC = c + dc;
+        if (inBounds(toR, toC) && board[toR][toC] === null)
+          moves.push({ from: { r, c }, to: { r: toR, c: toC }, captures: [] });
+      }
+      return moves;
+    }
+
+    function getCaptureMovesForPiece(r, c, isKing) {
+      const piece = board[r][c];
+      if (!piece) return [];
+      const dirs = getDirs(piece.color, isKing);
+      const results = [];
+      for (const [dr, dc] of dirs) {
+        const midR = r + dr,
+          midC = c + dc,
+          toR = r + 2 * dr,
+          toC = c + 2 * dc;
+        if (
+          inBounds(toR, toC) &&
+          inBounds(midR, midC) &&
+          board[toR][toC] === null
+        ) {
+          const mid = board[midR][midC];
+          if (mid && mid.color !== piece.color)
+            results.push({
+              from: { r, c },
+              to: { r: toR, c: toC },
+              captures: [{ r: midR, c: midC }],
+            });
+        }
+      }
+      return results;
+    }
+
+    function performMove(move) {
+      const { from, to, captures } = move;
+      const piece = board[from.r][from.c];
+      if (!piece) return;
+      board[to.r][to.c] = piece;
+      board[from.r][from.c] = null;
+      if (captures && captures.length)
+        for (const cap of captures) board[cap.r][cap.c] = null;
+      if (piece.color === "red" && to.r === 0) piece.king = true;
+      if (piece.color === "blue" && to.r === 7) piece.king = true;
+      self.moveCount++;
+      if (captures && captures.length) {
+        const more = pieceHasCapture(to.r, to.c, piece.king);
+        if (more) {
+          selected = { row: to.r, col: to.c };
+          chaining = true;
+          render();
+          return;
+        }
+      }
+      chaining = false;
+      selected = null;
+      turn = turn === "red" ? "blue" : "red";
+      forcedCaptureSquares = computeForcedCaptures(turn);
+      updateTurnToken();
+      render();
+    }
+
+    function showMoves(r, c) {
+      clearHighlights();
+      const moves = computeValidMoves(r, c);
+      moves.forEach((m) => {
+        const el = getSquareEl(m.to.r, m.to.c);
+        if (m.captures && m.captures.length) el.classList.add("capture-target");
+        else el.classList.add("move-target");
+      });
+    }
+
+    function getSquareEl(r, c) {
+      return boardGrid.children[r * 8 + c];
+    }
+    function inBounds(r, c) {
+      return r >= 0 && r < 8 && c >= 0 && c < 8;
+    }
+
+    function clearHighlights() {
+      Array.from(boardGrid.children).forEach((ch) =>
+        ch.classList.remove("move-target", "capture-target", "must-capture"),
+      );
+      forcedCaptureSquares.forEach((s) => {
+        const el = getSquareEl(s.r, s.c);
+        if (el) el.classList.add("must-capture");
+      });
+    }
+
+    function updateTurnToken() {
+      turnToken.className = "token " + turn;
+      turnLabel.textContent = turn === "red" ? "Red's Turn" : "Blue's Turn";
+    }
+
+    function getAllPieces(color) {
+      const pieces = [];
+      for (let r = 0; r < 8; r++)
+        for (let c = 0; c < 8; c++)
+          if (board[r][c] && board[r][c].color === color) pieces.push({ r, c });
+      return pieces;
+    }
+
+    function hasAnyMoves(color) {
+      return getAllPieces(color).some(
+        (p) => computeValidMoves(p.r, p.c).length > 0,
+      );
+    }
+
+    function checkWinner() {
+      const redPieces = getAllPieces("red");
+      const bluePieces = getAllPieces("blue");
+      if (redPieces.length === 0) {
+        showWinner("Blue Wins! 🔵");
+        return;
+      }
+      if (bluePieces.length === 0) {
+        showWinner("Red Wins! 🔴");
+        return;
+      }
+      if (!hasAnyMoves("red")) {
+        showWinner("Blue Wins! 🔵");
+        return;
+      }
+      if (!hasAnyMoves("blue")) {
+        showWinner("Red Wins! 🔴");
+        return;
+      }
+    }
+
+    function showWinner(text) {
+      winnerText.textContent = text;
+      winnerPopup.classList.remove("hidden");
+      const winner = text.includes("Red") ? 1 : 2;
+      const duration = Date.now() - (self.sessionStartTime || Date.now());
+      eventBus?.emit("game:end", {
+        gameId: "checkers",
+        winner,
+        winReason: text,
+        moveCount: self.moveCount,
+        sessionDuration: duration,
+        scores: { 1: winner === 1 ? 1 : 0, 2: winner === 2 ? 1 : 0 },
+      });
+    }
+  }
+
+  getState() {
+    return { currentPlayer: 1, gameActive: true };
+  }
+  makeMove() {
+    return { valid: false };
+  }
+  cleanup() {
+    if (this.boardElement) this.boardElement.innerHTML = "";
+  }
 }
