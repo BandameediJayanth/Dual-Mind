@@ -43,24 +43,19 @@ export class MLClient {
    * Initialize the ML client
    */
   async init() {
-    try {
-      await this.checkPythonService();
-      this.isReady = true;
+    // Check Python service silently — it's optional on Vercel deployments
+    await this.checkPythonService();
+    this.isReady = true;
 
-      if (this.eventBus) {
-        this.eventBus.emit("ml:ready", {
-          pythonService: this.pythonServiceAvailable,
-        });
-      }
-
-      console.log(
-        `🤖 ML Client initialized (Python service: ${this.pythonServiceAvailable ? "connected" : "unavailable"})`,
-      );
-    } catch (error) {
-      console.warn("ML Client: Python service not available, using fallback");
-      this.pythonServiceAvailable = false;
-      this.isReady = true;
+    if (this.eventBus) {
+      this.eventBus.emit("ml:ready", {
+        pythonService: this.pythonServiceAvailable,
+      });
     }
+
+    console.log(
+      `🤖 ML Client initialized (Python service: ${this.pythonServiceAvailable ? "connected" : "unavailable"})`,
+    );
   }
 
   /**

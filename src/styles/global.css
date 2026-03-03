@@ -141,6 +141,13 @@ body {
   cursor: url('/cursor.svg') 12 8, auto;
 }
 
+/* Force custom cursor everywhere — override component CSS `cursor: pointer` */
+*,
+*::before,
+*::after {
+  cursor: url('/cursor.svg') 12 8, auto !important;
+}
+
 button,
 a,
 [role="button"],
@@ -152,12 +159,23 @@ a,
 .btn-ghost,
 .fiar-cell,
 .ttt-cell {
-  cursor: url('/cursor.svg') 12 8, pointer;
+  cursor: url('/cursor.svg') 12 8, pointer !important;
+}
+
+/* Keep custom cursor during click / active state */
+*:active {
+  cursor: url('/cursor.svg') 12 8, auto !important;
+}
+
+button:active,
+a:active,
+[role="button"]:active {
+  cursor: url('/cursor.svg') 12 8, pointer !important;
 }
 
 input,
 textarea {
-  cursor: text;
+  cursor: text !important;
 }
 
 .app {

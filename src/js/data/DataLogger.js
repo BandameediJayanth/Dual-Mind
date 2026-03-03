@@ -34,6 +34,10 @@ export class DataLogger {
    * Create a placeholder session row so moves can reference it via FK.
    * Called at the start of a game.
    */
+  /**
+   * Create a placeholder session row so moves can reference it via FK.
+   * Called at the start of a game. Waits for completion so moves don't race ahead.
+   */
   async createSessionAsync(sessionId, gameId) {
     if (!this.supabase) return;
     try {
@@ -49,7 +53,16 @@ export class DataLogger {
           device_info: this.getDeviceInfo(),
         },
       ]);
-      if (error) console.warn("Supabase createSession error:", error);
+      if (error) {
+        // RLS policy may block inserts with the anon key — disable logging for this session
+        if (error.code === '42501') {
+          console.warn("Supabase: RLS policy blocked session insert. Data logging disabled for this session. "
+            + "Grant INSERT on 'sessions' to the anon role or use a service-role key.");
+          this._loggingDisabled = true;
+        } else {
+          console.warn("Supabase createSession error:", error);
+        }
+      }
     } catch (err) {
       console.warn("Supabase createSession failed:", err);
     }
@@ -59,7 +72,7 @@ export class DataLogger {
    * Update the session row with final results when the game ends.
    */
   async logSessionAsync(sessionData) {
-    if (!this.supabase) return;
+    if (!this.supabase || this._loggingDisabled) return;
     try {
       const { error } = await this.supabase.from("sessions").upsert(
         [
@@ -76,14 +89,20 @@ export class DataLogger {
         ],
         { onConflict: "id" },
       );
-      if (error) console.warn("Supabase logSession error:", error);
+      if (error) {
+        if (error.code === '42501') {
+          this._loggingDisabled = true;
+        } else {
+          console.warn("Supabase logSession error:", error);
+        }
+      }
     } catch (err) {
       console.warn("Supabase logSession failed:", err);
     }
   }
 
   async logMoveAsync(sessionId, moveData) {
-    if (!this.supabase) return;
+    if (!this.supabase || this._loggingDisabled) return;
     try {
       const { error } = await this.supabase.from("moves").insert([
         {
@@ -102,7 +121,7 @@ export class DataLogger {
   }
 
   async logPredictionAsync(sessionId, predictionData) {
-    if (!this.supabase) return;
+    if (!this.supabase || this._loggingDisabled) return;
     try {
       const { error } = await this.supabase.from("predictions").insert([
         {
