@@ -4,6 +4,10 @@ export class DataLogger {
   constructor() {
     this.supabase = supabase;
     this.playerId = this.getOrCreatePlayerId();
+    this._loggingDisabled = false;
+    // Promise that resolves once the session row exists (or failed). 
+    // All other log methods await this so they never race ahead.
+    this._sessionReady = Promise.resolve();
 
     if (this.supabase) {
       console.log("Supabase DataLogger initialized.");
@@ -32,10 +36,17 @@ export class DataLogger {
 
   /**
    * Create a placeholder session row so moves can reference it via FK.
-   * Called at the start of a game. Waits for completion so moves don't race ahead.
+   * Stores a promise that all other log methods await before proceeding.
+   * If this fails for ANY reason, logging is disabled for the rest of the session.
    */
-  async createSessionAsync(sessionId, gameId) {
+  createSessionAsync(sessionId, gameId) {
     if (!this.supabase) return;
+    // Store the promise — logMoveAsync / logSessionAsync will await it
+    this._sessionReady = this._insertSession(sessionId, gameId);
+    return this._sessionReady;
+  }
+
+  async _insertSession(sessionId, gameId) {
     try {
       const { error } = await this.supabase.from("sessions").insert([
         {
@@ -50,18 +61,14 @@ export class DataLogger {
         },
       ]);
       if (error) {
-        // RLS policy (42501) or auth (PGRST301 / HTTP 401) — disable logging for this session
-        if (error.code === "42501" || error.code === "PGRST301" || error.message?.includes('Unauthorized')) {
-          console.warn(
-            "Supabase: auth/RLS blocked session insert. Data logging disabled for this session.",
-          );
-          this._loggingDisabled = true;
-        } else {
-          console.warn("Supabase createSession error:", error);
-        }
+        console.warn(
+          "Supabase: session insert failed — data logging disabled for this session.",
+          error.message || error,
+        );
+        this._loggingDisabled = true;
       }
     } catch (err) {
-      console.warn("Supabase createSession failed:", err);
+      console.warn("Supabase: session insert failed — data logging disabled.", err);
       this._loggingDisabled = true;
     }
   }
@@ -70,7 +77,10 @@ export class DataLogger {
    * Update the session row with final results when the game ends.
    */
   async logSessionAsync(sessionData) {
-    if (!this.supabase || this._loggingDisabled) return;
+    if (!this.supabase) return;
+    // Wait for session creation to finish (success or failure)
+    await this._sessionReady;
+    if (this._loggingDisabled) return;
     try {
       const { error } = await this.supabase.from("sessions").upsert(
         [
@@ -88,11 +98,8 @@ export class DataLogger {
         { onConflict: "id" },
       );
       if (error) {
-        if (error.code === "42501" || error.code === "PGRST301" || error.message?.includes('Unauthorized')) {
-          this._loggingDisabled = true;
-        } else {
-          console.warn("Supabase logSession error:", error);
-        }
+        console.warn("Supabase logSession error:", error);
+        this._loggingDisabled = true;
       }
     } catch (err) {
       console.warn("Supabase logSession failed:", err);
@@ -100,7 +107,10 @@ export class DataLogger {
   }
 
   async logMoveAsync(sessionId, moveData) {
-    if (!this.supabase || this._loggingDisabled) return;
+    if (!this.supabase) return;
+    // Wait for session creation to finish (success or failure)
+    await this._sessionReady;
+    if (this._loggingDisabled) return;
     try {
       const { error } = await this.supabase.from("moves").insert([
         {
@@ -119,7 +129,9 @@ export class DataLogger {
   }
 
   async logPredictionAsync(sessionId, predictionData) {
-    if (!this.supabase || this._loggingDisabled) return;
+    if (!this.supabase) return;
+    await this._sessionReady;
+    if (this._loggingDisabled) return;
     try {
       const { error } = await this.supabase.from("predictions").insert([
         {
