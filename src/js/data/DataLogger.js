@@ -5,7 +5,7 @@ export class DataLogger {
     this.supabase = supabase;
     this.playerId = this.getOrCreatePlayerId();
     this._loggingDisabled = false;
-    // Promise that resolves once the session row exists (or failed). 
+    // Promise that resolves once the session row exists (or failed).
     // All other log methods await this so they never race ahead.
     this._sessionReady = Promise.resolve();
 
@@ -68,7 +68,10 @@ export class DataLogger {
         this._loggingDisabled = true;
       }
     } catch (err) {
-      console.warn("Supabase: session insert failed — data logging disabled.", err);
+      console.warn(
+        "Supabase: session insert failed — data logging disabled.",
+        err,
+      );
       this._loggingDisabled = true;
     }
   }

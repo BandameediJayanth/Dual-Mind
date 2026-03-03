@@ -141,6 +141,14 @@ export class MemoryMatch {
         this.flippedCards.push(card);
         this.moveCount++;
 
+        this.eventBus?.emit('game:move', {
+            gameId: 'memorymatch',
+            player: this.currentPlayer,
+            position: { index: parseInt(card.dataset.index), symbol: card.dataset.symbol },
+            timestamp: Date.now(),
+            decisionTime: 0,
+        });
+
         if (this.flippedCards.length === 2) {
             this._checkMatch();
         }

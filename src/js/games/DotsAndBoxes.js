@@ -190,6 +190,14 @@ export class DotsAndBoxes {
             el.style.background = currentPlayer === 1 ? '#1f78ff' : '#ff3b3b';
             self.moveCount++;
 
+            eventBus?.emit('game:move', {
+                gameId: 'dotsandboxes',
+                player: currentPlayer,
+                position: { type: el.dataset.type, row: parseInt(el.dataset.r), col: parseInt(el.dataset.c) },
+                timestamp: Date.now(),
+                decisionTime: 0,
+            });
+
             const madeBox = markCompletedBoxes();
             if (!madeBox) currentPlayer = currentPlayer === 1 ? 2 : 1;
 

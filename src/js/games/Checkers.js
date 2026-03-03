@@ -118,6 +118,7 @@ export class Checkers {
     function init() {
       self.moveCount = 0;
       self.sessionStartTime = Date.now();
+      turn = "red";
       createModel();
       selected = null;
       chaining = false;
@@ -336,6 +337,16 @@ export class Checkers {
       if (piece.color === "red" && to.r === 0) piece.king = true;
       if (piece.color === "blue" && to.r === 7) piece.king = true;
       self.moveCount++;
+
+      eventBus?.emit("game:move", {
+        gameId: "checkers",
+        player: turn === "red" ? 1 : 2,
+        position: { from: { r: from.r, c: from.c }, to: { r: to.r, c: to.c } },
+        timestamp: Date.now(),
+        decisionTime: 0,
+        isCapture: captures && captures.length > 0,
+        isKing: piece.king,
+      });
       if (captures && captures.length) {
         const more = pieceHasCapture(to.r, to.c, piece.king);
         if (more) {

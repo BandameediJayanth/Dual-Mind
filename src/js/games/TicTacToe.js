@@ -1,8 +1,6 @@
 /**
  * TicTacToe - Integrated from my_games/tic_tak_toe
  * Classic 3x3 grid game with modern UI design
- * Fixed: game:end payload includes moveCount + sessionDuration
- *        scores persist across rematch, proper reset on new game
  */
 export class TicTacToe {
   constructor(eventBus) {
@@ -14,8 +12,6 @@ export class TicTacToe {
     this.winningCells = null;
     this.boundClickHandler = null;
     this.moveStartTime = null;
-    this.sessionStartTime = null;
-    this.moveCount = 0;
     this.boardElement = null;
   }
 
@@ -25,10 +21,6 @@ export class TicTacToe {
     this.gameActive = true;
     this.winningCells = null;
     this.moveStartTime = Date.now();
-    this.sessionStartTime = Date.now();
-    this.moveCount = 0;
-    // NOTE: scores are NOT reset here — they persist across rematches
-    // Call resetScores() explicitly to clear them
     console.log("TicTacToe initialized");
   }
 
@@ -47,6 +39,23 @@ export class TicTacToe {
     const container = document.createElement("div");
     container.className = "ttt-container";
     container.innerHTML = `
+      <div class="ttt-game-info">
+        <div class="ttt-player ttt-player-x ${this.currentPlayer === "X" && this.gameActive ? "active" : ""}">
+          <span class="ttt-player-symbol">X</span>
+          <span class="ttt-player-name">Player X</span>
+          <span class="ttt-player-score" id="ttt-score-x">${this.scores.X}</span>
+        </div>
+        <div class="ttt-player ttt-player-o ${this.currentPlayer === "O" && this.gameActive ? "active" : ""}">
+          <span class="ttt-player-symbol">O</span>
+          <span class="ttt-player-name">Player O</span>
+          <span class="ttt-player-score" id="ttt-score-o">${this.scores.O}</span>
+        </div>
+      </div>
+      
+      <div class="ttt-current-turn">
+        <span id="ttt-turn-indicator">${this.gameActive ? `${this.currentPlayer}'s Turn` : "Game Over"}</span>
+      </div>
+
       <div class="ttt-game-board" id="ttt-game-board">
         ${this.board
           .map(
@@ -57,8 +66,15 @@ export class TicTacToe {
           )
           .join("")}
       </div>
+
       <div class="ttt-game-controls">
-        <button id="ttt-reset-game" class="ttt-btn ttt-btn-secondary">New Game</button>
+        <button id="ttt-reset-game" class="ttt-btn ttt-btn-primary">New Game</button>
+        <button id="ttt-reset-scores" class="ttt-btn ttt-btn-secondary">Reset Scores</button>
+      </div>
+
+      <div class="ttt-game-status" id="ttt-game-status">
+        ${!this.gameActive && this.winningCells ? `${this.currentPlayer} Wins! 🎉` : ""}
+        ${!this.gameActive && !this.winningCells && this.board.every((c) => c !== "") ? "It's a Draw! 🤝" : ""}
       </div>
     `;
 
@@ -78,27 +94,83 @@ export class TicTacToe {
     style.id = "ttt-styles";
     style.textContent = `
       .ttt-container {
-        background: transparent;
-        backdrop-filter: none;
-        box-shadow: none;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         text-align: center;
+        max-width: 500px;
         width: 100%;
+        margin: 0 auto;
+      }
+
+      .ttt-game-info {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 1rem;
+      }
+
+      .ttt-player {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        padding: 1rem;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        opacity: 0.6;
       }
 
-      /* Removed redundant UI styles */
+      .ttt-player.active {
+        opacity: 1;
+        transform: scale(1.05);
+      }
 
+      .ttt-player-x.active {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+      }
+
+      .ttt-player-o.active {
+        background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        color: white;
+      }
+
+      .ttt-player-symbol {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .ttt-player-name {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .ttt-player-score {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .ttt-current-turn {
+        background: #f7fafc;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+      }
+
+      #ttt-turn-indicator {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #4a5568;
+      }
 
       .ttt-game-board {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        margin: 0 auto;
-        width: min(400px, 90vw);
-        aspect-ratio: 1;
+        gap: 0;
+        margin: 2rem auto;
+        max-width: 300px;
         background: white;
         border: 4px solid #000;
         border-radius: 15px;
@@ -210,7 +282,19 @@ export class TicTacToe {
         transform: translateY(-2px);
       }
 
+      .ttt-game-status {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        min-height: 1rem;
+      }
 
+      .ttt-game-status:not(:empty) {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+      }
 
       @media (max-width: 600px) {
         .ttt-container {
@@ -250,6 +334,9 @@ export class TicTacToe {
       if (e.target.id === "ttt-reset-game") {
         this.resetGame();
       }
+      if (e.target.id === "ttt-reset-scores") {
+        this.resetScores();
+      }
     };
 
     boardElement.addEventListener("click", this.boundClickHandler);
@@ -270,9 +357,8 @@ export class TicTacToe {
     const decisionTime = Date.now() - (this.moveStartTime || Date.now());
 
     this.board[index] = this.currentPlayer;
-    this.moveCount++;
 
-    // Emit move event for analytics (feature extraction only — does NOT trigger GameController)
+    // Emit move event for analytics
     this.eventBus?.emit("game:move", {
       gameId: "tictactoe",
       player: this.currentPlayer === "X" ? 1 : 2,
@@ -288,8 +374,6 @@ export class TicTacToe {
     } else {
       this.switchPlayer();
       this.render(null, this.boardElement);
-      // Update global UI
-      this.eventBus?.emit("game:turn", { player: this.currentPlayer === "X" ? 1 : 2 });
     }
   }
 
@@ -328,16 +412,11 @@ export class TicTacToe {
     this.gameActive = false;
     this.scores[this.currentPlayer]++;
 
-    const sessionDuration = Date.now() - (this.sessionStartTime || Date.now());
-
-    // Emit game end event with full payload for main.js to handle
+    // Emit game end event for analytics
     this.eventBus?.emit("game:end", {
       gameId: "tictactoe",
       winner: this.currentPlayer === "X" ? 1 : 2,
-      winReason: `${this.currentPlayer} got three in a row!`,
       result: "win",
-      moveCount: this.moveCount,
-      sessionDuration: sessionDuration,
       scores: { ...this.scores },
     });
 
@@ -347,16 +426,11 @@ export class TicTacToe {
   handleDraw() {
     this.gameActive = false;
 
-    const sessionDuration = Date.now() - (this.sessionStartTime || Date.now());
-
-    // Emit game end event with full payload
+    // Emit game end event for analytics
     this.eventBus?.emit("game:end", {
       gameId: "tictactoe",
-      winner: "draw",
-      winReason: "Board is full — it's a draw!",
+      winner: null,
       result: "draw",
-      moveCount: this.moveCount,
-      sessionDuration: sessionDuration,
       scores: { ...this.scores },
     });
 
@@ -369,14 +443,11 @@ export class TicTacToe {
   }
 
   resetGame() {
-    // Reset board state but keep scores
     this.board = Array(9).fill("");
     this.currentPlayer = "X";
     this.gameActive = true;
     this.winningCells = null;
     this.moveStartTime = Date.now();
-    this.sessionStartTime = Date.now();
-    this.moveCount = 0;
     this.render(null, this.boardElement);
   }
 
@@ -394,14 +465,7 @@ export class TicTacToe {
     };
   }
 
-  cleanup() {
-    if (this.boardElement && this.boundClickHandler) {
-      this.boardElement.removeEventListener("click", this.boundClickHandler);
-    }
-    this.boundClickHandler = null;
-  }
-
-  // External interface for GameController (not used in self-contained mode)
+  // External interface for GameController - does NOT emit events to avoid infinite loop
   makeMove(data) {
     if (typeof data === "object" && data.position !== undefined) {
       const index = data.position;

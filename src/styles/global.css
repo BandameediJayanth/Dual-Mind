@@ -40,8 +40,8 @@
   --cell-hover-bg: rgba(99, 102, 241, 0.06);
 
   /* Typography */
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
 
   /* Spacing */
   --section-padding: 120px 0;
@@ -51,8 +51,8 @@
 /* ---- DARK THEME (system preference) ---- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg-deep: #0F0F1A;
-    --bg-surface: #1A1A2E;
+    --bg-deep: #0f0f1a;
+    --bg-surface: #1a1a2e;
     --bg-card: #16213e;
     --bg-card-hover: #1c2a4a;
     --bg-overlay: rgba(15, 15, 26, 0.88);
@@ -64,8 +64,8 @@
     --color-accent: #1e1b4b;
     --color-cyan: #38bdf8;
 
-    --text-bright: #F5F7FA;
-    --text-primary: #F5F7FA;
+    --text-bright: #f5f7fa;
+    --text-primary: #f5f7fa;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
 
@@ -74,8 +74,8 @@
     --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
     --shadow-card-hover: 0 8px 40px rgba(0, 0, 0, 0.4);
 
-    --hero-bg-left: #0F172A;
-    --hero-bg-right: #1E1B4B;
+    --hero-bg-left: #0f172a;
+    --hero-bg-right: #1e1b4b;
     --navbar-bg: rgba(15, 15, 26, 0.88);
     --glass-border: rgba(124, 58, 237, 0.12);
     --glass-bg: rgba(22, 33, 62, 0.6);
@@ -87,8 +87,8 @@
 
 /* ---- DARK THEME (manual toggle) ---- */
 [data-theme="dark"] {
-  --bg-deep: #0F0F1A;
-  --bg-surface: #1A1A2E;
+  --bg-deep: #0f0f1a;
+  --bg-surface: #1a1a2e;
   --bg-card: #16213e;
   --bg-card-hover: #1c2a4a;
   --bg-overlay: rgba(15, 15, 26, 0.88);
@@ -100,8 +100,8 @@
   --color-accent: #1e1b4b;
   --color-cyan: #38bdf8;
 
-  --text-bright: #F5F7FA;
-  --text-primary: #F5F7FA;
+  --text-bright: #f5f7fa;
+  --text-primary: #f5f7fa;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
@@ -110,8 +110,8 @@
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
   --shadow-card-hover: 0 8px 40px rgba(0, 0, 0, 0.4);
 
-  --hero-bg-left: #0F172A;
-  --hero-bg-right: #1E1B4B;
+  --hero-bg-left: #0f172a;
+  --hero-bg-right: #1e1b4b;
   --navbar-bg: rgba(15, 15, 26, 0.88);
   --glass-border: rgba(124, 58, 237, 0.12);
   --glass-bg: rgba(22, 33, 62, 0.6);
@@ -120,7 +120,9 @@
   --cell-hover-bg: rgba(124, 58, 237, 0.12);
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -138,14 +140,18 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
-  cursor: url('/cursor.svg') 12 8, auto;
+  cursor:
+    url("/cursor.svg") 12 8,
+    auto;
 }
 
 /* Force custom cursor everywhere — override component CSS `cursor: pointer` */
 *,
 *::before,
 *::after {
-  cursor: url('/cursor.svg') 12 8, auto !important;
+  cursor:
+    url("/cursor.svg") 12 8,
+    auto !important;
 }
 
 button,
@@ -159,18 +165,24 @@ a,
 .btn-ghost,
 .fiar-cell,
 .ttt-cell {
-  cursor: url('/cursor.svg') 12 8, pointer !important;
+  cursor:
+    url("/cursor.svg") 12 8,
+    pointer !important;
 }
 
 /* Keep custom cursor during click / active state */
 *:active {
-  cursor: url('/cursor.svg') 12 8, auto !important;
+  cursor:
+    url("/cursor.svg") 12 8,
+    auto !important;
 }
 
 button:active,
 a:active,
 [role="button"]:active {
-  cursor: url('/cursor.svg') 12 8, pointer !important;
+  cursor:
+    url("/cursor.svg") 12 8,
+    pointer !important;
 }
 
 input,
@@ -198,7 +210,11 @@ textarea {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-secondary) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -250,7 +266,8 @@ textarea {
    LENIS SMOOTH SCROLL
    ============================================ */
 
-html.lenis, html.lenis body {
+html.lenis,
+html.lenis body {
   height: auto;
 }
 

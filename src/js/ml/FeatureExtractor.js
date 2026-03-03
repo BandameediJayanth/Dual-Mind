@@ -507,7 +507,8 @@ export class FeatureExtractor {
       optimalPlayRate: 0,
       consistencyScore: 0.5,
       improvementRate: 0,
-      gameId: null,
+      gameId: this.gameId || null,
+      sessionId: this.sessionId || null,
       totalMoves: 0,
       sessionDuration: 0,
     };

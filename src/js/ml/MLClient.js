@@ -64,7 +64,11 @@ export class MLClient {
   async checkPythonService() {
     // In production (no Vite proxy), the /api/ml path doesn't exist.
     // Skip the fetch entirely to avoid a browser-level 404 console error.
-    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PROD) {
+    if (
+      typeof import.meta !== "undefined" &&
+      import.meta.env &&
+      import.meta.env.PROD
+    ) {
       this.pythonServiceAvailable = false;
       return false;
     }

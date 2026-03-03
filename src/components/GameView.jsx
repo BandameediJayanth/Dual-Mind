@@ -1,41 +1,45 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useML } from './MLProvider';
-import CognitiveCard from './CognitiveCard';
+import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useML } from "./MLProvider";
+import CognitiveCard from "./CognitiveCard";
 
 // Import original vanilla JS game engines
-import { TicTacToe } from '../js/games/TicTacToe';
-import { Checkers } from '../js/games/Checkers';
-import { FourInARow } from '../js/games/FourInARow';
-import { DotsAndBoxes } from '../js/games/DotsAndBoxes';
-import { MemoryMatch } from '../js/games/MemoryMatch';
-import { WordChain } from '../js/games/WordChain';
-import { Ludo } from '../js/games/Ludo';
-import { ColorWars } from '../js/games/ColorWars';
-import { SeaWars } from '../js/games/SeaWars';
-import { SnakeAndLadders } from '../js/games/SnakeAndLadders';
-import './GameView.css';
+import { TicTacToe } from "../js/games/TicTacToe";
+import { Checkers } from "../js/games/Checkers";
+import { FourInARow } from "../js/games/FourInARow";
+import { DotsAndBoxes } from "../js/games/DotsAndBoxes";
+import { MemoryMatch } from "../js/games/MemoryMatch";
+import { WordChain } from "../js/games/WordChain";
+import { Ludo } from "../js/games/Ludo";
+import { ColorWars } from "../js/games/ColorWars";
+import { SeaWars } from "../js/games/SeaWars";
+import { SnakeAndLadders } from "../js/games/SnakeAndLadders";
+import "./GameView.css";
 
 const GAME_MAP = {
-  tictactoe:      { Engine: TicTacToe,       name: 'Tic Tac Toe',      icon: '❌' },
-  fourinarow:     { Engine: FourInARow,      name: 'Four in a Row',    icon: '🔴' },
-  checkers:       { Engine: Checkers,        name: 'Checkers',         icon: '♟️' },
-  dotsandboxes:   { Engine: DotsAndBoxes,    name: 'Dots & Boxes',     icon: '🔲' },
-  memorymatch:    { Engine: MemoryMatch,     name: 'Memory Match',     icon: '🧠' },
-  wordchain:      { Engine: WordChain,       name: 'Word Chain',       icon: '🔤' },
-  ludo:           { Engine: Ludo,            name: 'Ludo',             icon: '🎲' },
-  snakeandladders:{ Engine: SnakeAndLadders, name: 'Snake & Ladders',  icon: '🐍' },
-  colorwars:      { Engine: ColorWars,       name: 'Color Wars',       icon: '🎨' },
-  seawars:        { Engine: SeaWars,         name: 'Sea Wars',         icon: '🚢' },
+  tictactoe: { Engine: TicTacToe, name: "Tic Tac Toe", icon: "❌" },
+  fourinarow: { Engine: FourInARow, name: "Four in a Row", icon: "🔴" },
+  checkers: { Engine: Checkers, name: "Checkers", icon: "♟️" },
+  dotsandboxes: { Engine: DotsAndBoxes, name: "Dots & Boxes", icon: "🔲" },
+  memorymatch: { Engine: MemoryMatch, name: "Memory Match", icon: "🧠" },
+  wordchain: { Engine: WordChain, name: "Word Chain", icon: "🔤" },
+  ludo: { Engine: Ludo, name: "Ludo", icon: "🎲" },
+  snakeandladders: {
+    Engine: SnakeAndLadders,
+    name: "Snake & Ladders",
+    icon: "🐍",
+  },
+  colorwars: { Engine: ColorWars, name: "Color Wars", icon: "🎨" },
+  seawars: { Engine: SeaWars, name: "Sea Wars", icon: "🚢" },
 };
 
 // Skill tier colors for visual feedback
 const TIER_COLORS = {
-  Novice: '#94a3b8',
-  Beginner: '#22c55e',
-  Intermediate: '#3b82f6',
-  Advanced: '#a855f7',
-  Expert: '#f59e0b',
+  Novice: "#94a3b8",
+  Beginner: "#22c55e",
+  Intermediate: "#3b82f6",
+  Advanced: "#a855f7",
+  Expert: "#f59e0b",
 };
 
 export default function GameView({ gameId, onBack }) {
@@ -71,28 +75,35 @@ export default function GameView({ gameId, onBack }) {
       },
       off(evt, fn) {
         if (this._handlers[evt]) {
-          this._handlers[evt] = this._handlers[evt].filter(h => h !== fn);
+          this._handlers[evt] = this._handlers[evt].filter((h) => h !== fn);
         }
       },
       emit(evt, ...args) {
-        (this._handlers[evt] || []).forEach(fn => {
-          try { fn(...args); } catch(e) { console.error(e); }
+        (this._handlers[evt] || []).forEach((fn) => {
+          try {
+            fn(...args);
+          } catch (e) {
+            console.error(e);
+          }
         });
-      }
+      },
     };
 
     // Listen for move events to record in FeatureExtractor
-    eventBus.on('game:move', (moveData) => {
+    eventBus.on("game:move", (moveData) => {
       recordMove(moveData || {});
     });
 
     // Listen for game end
-    eventBus.on('game:end', async (data) => {
+    eventBus.on("game:end", async (data) => {
       // Normalize result field — some games only emit `winner`, not `result`
       if (!data.result) {
-        data.result = (data.winner && data.winner !== 'draw' && data.winner !== null) ? 'win' : 'draw';
+        data.result =
+          data.winner && data.winner !== "draw" && data.winner !== null
+            ? "win"
+            : "draw";
       }
-      console.log('🏆 Game ended:', data);
+      console.log("🏆 Game ended:", data);
       setGameResult(data);
       setShowResultModal(true);
 
@@ -102,10 +113,10 @@ export default function GameView({ gameId, onBack }) {
         const prediction = await endSessionAndPredict(data);
         if (prediction) {
           setMlPrediction(prediction);
-          console.log('🤖 ML Prediction:', prediction);
+          console.log("🤖 ML Prediction:", prediction);
         }
       } catch (err) {
-        console.error('ML prediction failed:', err);
+        console.error("ML prediction failed:", err);
       }
       setMlLoading(false);
     });
@@ -130,7 +141,7 @@ export default function GameView({ gameId, onBack }) {
         gameRef.current.cleanup();
       }
       if (boardRef.current) {
-        boardRef.current.innerHTML = '';
+        boardRef.current.innerHTML = "";
       }
       gameRef.current = null;
     };
@@ -176,14 +187,20 @@ export default function GameView({ gameId, onBack }) {
           <span className="game-icon">{gameDef.icon}</span>
           <h2>{gameDef.name}</h2>
           {/* ML status indicator */}
-          <span className={`ml-badge-small ${mlStatus.pythonService ? 'ml-connected' : 'ml-fallback'}`}>
-            {mlStatus.pythonService ? '🤖 ML' : '📐 Rule'}
+          <span
+            className={`ml-badge-small ${mlStatus.pythonService ? "ml-connected" : "ml-fallback"}`}
+          >
+            {mlStatus.pythonService ? "🤖 ML" : "📐 Rule"}
           </span>
         </div>
       </div>
 
       <div className="game-board-wrapper">
-        <div ref={boardRef} className="game-board-mount-point" id="game-board-container" />
+        <div
+          ref={boardRef}
+          className="game-board-mount-point"
+          id="game-board-container"
+        />
       </div>
 
       {/* ============ GAME RESULT MODAL ============ */}
@@ -200,14 +217,26 @@ export default function GameView({ gameId, onBack }) {
               initial={{ opacity: 0, scale: 0.85, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.85, y: 30 }}
-              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
             >
-              <button className="btn-close-modal" onClick={() => setShowResultModal(false)} aria-label="Close">✖</button>
+              <button
+                className="btn-close-modal"
+                onClick={() => setShowResultModal(false)}
+                aria-label="Close"
+              >
+                ✖
+              </button>
               <div className="result-icon">
-                {gameResult.winner && gameResult.winner !== 'draw' && gameResult.winner !== null ? '🏆' : '🤝'}
+                {gameResult.winner &&
+                gameResult.winner !== "draw" &&
+                gameResult.winner !== null
+                  ? "🏆"
+                  : "🤝"}
               </div>
               <h2 className="result-title">
-                {gameResult.winner && gameResult.winner !== 'draw' && gameResult.winner !== null
+                {gameResult.winner &&
+                gameResult.winner !== "draw" &&
+                gameResult.winner !== null
                   ? `Player ${gameResult.winner} Wins!`
                   : "It's a Draw!"}
               </h2>
@@ -222,9 +251,15 @@ export default function GameView({ gameId, onBack }) {
 
               {mlPrediction && mlPrediction.p1 && (
                 <div className="ml-predictions-wrapper">
-                  <CognitiveCard prediction={mlPrediction.p1} playerName={mlPrediction.p2 ? "Player 1" : "Player"} />
+                  <CognitiveCard
+                    prediction={mlPrediction.p1}
+                    playerName={mlPrediction.p2 ? "Player 1" : "Player"}
+                  />
                   {mlPrediction.p2 && (
-                    <CognitiveCard prediction={mlPrediction.p2} playerName="Player 2" />
+                    <CognitiveCard
+                      prediction={mlPrediction.p2}
+                      playerName="Player 2"
+                    />
                   )}
                 </div>
               )}
@@ -233,7 +268,9 @@ export default function GameView({ gameId, onBack }) {
               <div className="result-stats">
                 {gameResult.moveCount != null && (
                   <div className="result-stat">
-                    <span className="result-stat-val">{gameResult.moveCount}</span>
+                    <span className="result-stat-val">
+                      {gameResult.moveCount}
+                    </span>
                     <span className="result-stat-label">Moves</span>
                   </div>
                 )}
@@ -248,7 +285,7 @@ export default function GameView({ gameId, onBack }) {
                 {gameResult.scores && (
                   <div className="result-stat">
                     <span className="result-stat-val">
-                      {Object.values(gameResult.scores).join(' - ')}
+                      {Object.values(gameResult.scores).join(" - ")}
                     </span>
                     <span className="result-stat-label">Score</span>
                   </div>
