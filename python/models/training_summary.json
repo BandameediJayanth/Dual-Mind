@@ -1,13 +1,13 @@
 {
-  "training_date": "2026-01-28T19:31:25.421912",
+  "training_date": "2026-03-03T23:44:48.656467",
   "model_type": "random_forest",
-  "n_samples": 1000,
+  "n_samples": 2000,
   "skill_predictor": {
-    "test_accuracy": 0.975,
-    "cv_score": 0.966
+    "test_accuracy": 0.98,
+    "cv_score": 0.9824999999999999
   },
   "performance_estimator": {
-    "test_r2": 0.8710635687137454,
-    "test_rmse": 7.694426087061544
+    "test_r2": 0.8895687214173622,
+    "test_rmse": 7.319500174891816
   }
 }

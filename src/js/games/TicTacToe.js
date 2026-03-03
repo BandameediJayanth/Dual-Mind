@@ -356,6 +356,16 @@ export class TicTacToe {
     // Calculate decision time for analytics
     const decisionTime = Date.now() - (this.moveStartTime || Date.now());
 
+    // Compute move flags BEFORE placing (board still in pre-move state)
+    const opponent = this.currentPlayer === "X" ? "O" : "X";
+    const isWinningMove = this._wouldWin(this.board, this.currentPlayer, index);
+    const isBlockingMove =
+      !isWinningMove && this._wouldWin(this.board, opponent, index);
+    // Center on first move, winning, or blocking are all optimal
+    const isCenterFirstMove =
+      this.board.filter((c) => c !== "").length === 0 && index === 4;
+    const isOptimal = isWinningMove || isBlockingMove || isCenterFirstMove;
+
     this.board[index] = this.currentPlayer;
 
     // Emit move event for analytics
@@ -365,6 +375,10 @@ export class TicTacToe {
       position: index,
       timestamp: Date.now(),
       decisionTime: decisionTime,
+      isWinningMove,
+      isBlockingMove,
+      isOptimal,
+      isStrategic: isWinningMove || isBlockingMove,
     });
 
     if (this.checkWin()) {
@@ -406,6 +420,25 @@ export class TicTacToe {
 
   checkDraw() {
     return this.board.every((cell) => cell !== "");
+  }
+
+  /** Returns true if placing `symbol` at `index` would win the game */
+  _wouldWin(board, symbol, index) {
+    const test = [...board];
+    test[index] = symbol;
+    const wins = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+    return wins.some(
+      ([a, b, c]) => test[a] && test[a] === test[b] && test[a] === test[c],
+    );
   }
 
   handleWin() {

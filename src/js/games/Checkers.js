@@ -334,18 +334,28 @@ export class Checkers {
       board[from.r][from.c] = null;
       if (captures && captures.length)
         for (const cap of captures) board[cap.r][cap.c] = null;
+
+      // Detect king promotion BEFORE setting the flag
+      const willBeKinged =
+        !piece.king &&
+        ((piece.color === "red" && to.r === 0) ||
+          (piece.color === "blue" && to.r === 7));
+
       if (piece.color === "red" && to.r === 0) piece.king = true;
       if (piece.color === "blue" && to.r === 7) piece.king = true;
       self.moveCount++;
 
+      const isCapture = captures && captures.length > 0;
       eventBus?.emit("game:move", {
         gameId: "checkers",
         player: turn === "red" ? 1 : 2,
         position: { from: { r: from.r, c: from.c }, to: { r: to.r, c: to.c } },
         timestamp: Date.now(),
         decisionTime: 0,
-        isCapture: captures && captures.length > 0,
+        isCapture,
         isKing: piece.king,
+        isOptimal: isCapture,
+        isStrategic: isCapture || willBeKinged,
       });
       if (captures && captures.length) {
         const more = pieceHasCapture(to.r, to.c, piece.king);

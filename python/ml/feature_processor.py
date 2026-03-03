@@ -29,6 +29,7 @@ class FeatureProcessor:
         # Consistency features
         'consistency_score': {'min': 0, 'max': 1, 'type': 'numeric'},
         'improvement_rate': {'min': -0.5, 'max': 0.5, 'type': 'numeric'},
+        'strategic_move_rate': {'min': 0, 'max': 1, 'type': 'numeric'},
         
         # Game-specific features
         'strategic_depth': {'min': 0, 'max': 1, 'type': 'numeric'},
@@ -46,8 +47,8 @@ class FeatureProcessor:
     # Features used for skill prediction
     SKILL_FEATURES = [
         'avg_decision_time', 'move_accuracy', 'error_rate', 'optimal_play_rate',
-        'pattern_success_rate', 'consistency_score', 'strategic_depth',
-        'memory_accuracy', 'logical_reasoning'
+        'pattern_success_rate', 'consistency_score', 'strategic_move_rate',
+        'strategic_depth', 'memory_accuracy', 'logical_reasoning'
     ]
     
     # Features used for performance estimation
