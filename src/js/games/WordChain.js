@@ -214,6 +214,8 @@ export class WordChain {
           : wrapper.querySelector("#wc-msg2");
 
       if (guessed === currentWord) {
+        // Capture before reset: revealed===1 means no wrong guesses (no hints used) = optimal
+        const wasOptimal = player.revealed <= 1;
         msgEl.textContent = "✅ Correct!";
         player.index++;
         player.revealed = 1;
@@ -225,6 +227,8 @@ export class WordChain {
           position: { wordIndex: player.index - 1, word: currentWord },
           timestamp: Date.now(),
           decisionTime: 0,
+          isOptimal: wasOptimal,   // got it right with no hint reveals
+          isStrategic: true,       // all correct words are strategic
         });
 
         if (player.index >= player.chain.length) {

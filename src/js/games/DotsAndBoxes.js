@@ -198,6 +198,9 @@ export class DotsAndBoxes {
       el.style.background = currentPlayer === 1 ? "#1f78ff" : "#ff3b3b";
       self.moveCount++;
 
+      // Compute box completions BEFORE emitting so isOptimal reflects reality
+      const madeBox = markCompletedBoxes();
+
       eventBus?.emit("game:move", {
         gameId: "dotsandboxes",
         player: currentPlayer,
@@ -208,9 +211,10 @@ export class DotsAndBoxes {
         },
         timestamp: Date.now(),
         decisionTime: 0,
+        isOptimal: madeBox,   // completed a box = optimal play
+        isStrategic: madeBox,
       });
 
-      const madeBox = markCompletedBoxes();
       if (!madeBox) currentPlayer = currentPlayer === 1 ? 2 : 1;
 
       updateDisplay(currentPlayer);

@@ -11,14 +11,17 @@ export default function CognitiveCard({ prediction, playerName = "Player" }) {
     
     // Normalize Speed (0-100)
     // Assume 0-5s is the normal range. <0.5s = 100, 5s+ = 0
-    const rawTime = features.avgDecisionTime || 3000;
+    const rawTime = features.avgDecisionTime ?? 3000;
     const speedScore = Math.max(0, Math.min(100, 100 - ((rawTime - 500) / 4500) * 100));
 
     // Normalize other features (0-100)
-    const accuracyScore = (features.moveAccuracy || 0.5) * 100;
-    const consistencyScore = (features.consistencyScore || 0.5) * 100;
-    const strategyScore = (features.strategicMoveRate || 0.5) * 100;
-    const performanceScore = prediction?.performanceIndex || 50;
+    // Use ?? not || so that a real value of 0 is preserved (|| treats 0 as falsy)
+    const accuracyScore = (features.moveAccuracy ?? 0.5) * 100;
+    const consistencyScore = (features.consistencyScore ?? 0.5) * 100;
+    // Prefer optimalPlayRate if available (most accurate signal), fall back to strategicMoveRate
+    const strategyRaw = features.optimalPlayRate ?? features.strategicMoveRate ?? null;
+    const strategyScore = strategyRaw !== null ? strategyRaw * 100 : 50; // 50 = truly unknown
+    const performanceScore = prediction?.performanceIndex ?? 50;
 
     const dataPoints = [
         { label: 'Accuracy', value: accuracyScore },

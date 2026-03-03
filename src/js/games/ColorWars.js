@@ -182,6 +182,8 @@ export class ColorWars {
       position: { row, col, dots: 3, firstMove: true },
       timestamp: Date.now(),
       decisionTime: 0,
+      isOptimal: false,
+      isStrategic: false,
     });
 
     this._switchPlayer();
@@ -191,6 +193,7 @@ export class ColorWars {
     const cell = this.grid[row][col];
     if (!cell || cell.owner !== this.currentPlayer) return;
     if (this._expanding) return; // Block input during chain reaction
+    const willExpand = cell.dots === 3; // dots+1==4 triggers chain expansion
     cell.dots++;
     this.playerScores[this.currentPlayer]++;
     this.moveCount++;
@@ -201,6 +204,8 @@ export class ColorWars {
       position: { row, col, dots: cell.dots },
       timestamp: Date.now(),
       decisionTime: 0,
+      isOptimal: willExpand,             // triggering an expansion = optimal
+      isStrategic: willExpand || cell.dots >= 3, // building toward explosion
     });
     if (cell.dots >= 4) {
       this._expanding = true;

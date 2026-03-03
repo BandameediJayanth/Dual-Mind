@@ -525,6 +525,8 @@ export class Ludo {
     this.lastMoveTime = Date.now();
     this.moveCount++;
 
+    // Pre-move checks for strategic flags
+    const isLeavingBase = BASE_POSITIONS[player].includes(currentPos) && this.diceValue === 6;
     // Emit move event
     this.eventBus?.emit("game:move", {
       gameId: "ludo",
@@ -532,6 +534,8 @@ export class Ludo {
       position: { piece, from: currentPos, diceValue: this.diceValue },
       timestamp: Date.now(),
       decisionTime,
+      isOptimal: isLeavingBase,       // using a 6 to bring a piece out of base = optimal
+      isStrategic: this.diceValue === 6, // 6 always grants extra turn = strategic
     });
 
     // Piece is in base → move to start

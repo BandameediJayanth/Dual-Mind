@@ -400,6 +400,25 @@ export class FeatureExtractor {
         features.vocabularyDepth = this.calculateVocabularyDepth();
         features.responseSpeed = this.calculateResponseSpeed();
         break;
+
+      case "colorwars":
+        features.territorialControl = this.calculateStrategicMoveRate();
+        features.strategicDepth = this.calculateStrategicDepth();
+        break;
+
+      case "dotsandboxes":
+        features.boxCompletionRate = this.calculateOptimalPlayRate();
+        features.strategicDepth = this.calculateStrategicDepth();
+        break;
+
+      case "seawars":
+        features.hitRate = this.calculateOptimalPlayRate();
+        features.logicalReasoning = this.calculateLogicalReasoning();
+        break;
+
+      case "snakeladders":
+        // Pure luck — only timing and consistency carry signal
+        break;
     }
 
     return features;

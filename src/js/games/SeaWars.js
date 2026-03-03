@@ -189,6 +189,7 @@ export class SeaWars {
       board[index].hit = true;
       self.moveCount++;
 
+      const isHit = !!board[index].ship;
       eventBus?.emit("game:move", {
         gameId: "seawars",
         player: currentPlayer,
@@ -199,7 +200,9 @@ export class SeaWars {
         },
         timestamp: Date.now(),
         decisionTime: 0,
-        isHit: board[index].ship,
+        isHit,
+        isOptimal: isHit,    // hitting a ship = optimal attack
+        isStrategic: isHit,
       });
 
       if (board[index].ship) {

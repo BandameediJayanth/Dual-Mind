@@ -162,6 +162,11 @@ export class MemoryMatch {
     this.flippedCards.push(card);
     this.moveCount++;
 
+    // If this is the 2nd flip, check if it matches the 1st (both already in array)
+    const isMatch =
+      this.flippedCards.length === 2 &&
+      this.flippedCards[0].dataset.symbol === card.dataset.symbol;
+
     this.eventBus?.emit("game:move", {
       gameId: "memorymatch",
       player: this.currentPlayer,
@@ -171,6 +176,8 @@ export class MemoryMatch {
       },
       timestamp: Date.now(),
       decisionTime: 0,
+      isOptimal: isMatch,      // remembered the matching card's position
+      isStrategic: isMatch,
     });
 
     if (this.flippedCards.length === 2) {

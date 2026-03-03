@@ -475,6 +475,8 @@ export class SnakeAndLadders {
         },
         timestamp: Date.now(),
         decisionTime: 0,
+        isOptimal: false,    // pure luck game — no strategic control over dice
+        isStrategic: false,
       });
 
       let pos = positions[currentPlayer] + roll;
