@@ -192,7 +192,11 @@ export class SeaWars {
       eventBus?.emit("game:move", {
         gameId: "seawars",
         player: currentPlayer,
-        position: { index, row: Math.floor(index / GRID_SIZE), col: index % GRID_SIZE },
+        position: {
+          index,
+          row: Math.floor(index / GRID_SIZE),
+          col: index % GRID_SIZE,
+        },
         timestamp: Date.now(),
         decisionTime: 0,
         isHit: board[index].ship,

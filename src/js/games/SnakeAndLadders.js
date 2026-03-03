@@ -468,7 +468,11 @@ export class SnakeAndLadders {
       eventBus?.emit("game:move", {
         gameId: "snakeladders",
         player: currentPlayer + 1,
-        position: { roll, from: positions[currentPlayer], to: Math.min(positions[currentPlayer] + roll, 100) },
+        position: {
+          roll,
+          from: positions[currentPlayer],
+          to: Math.min(positions[currentPlayer] + roll, 100),
+        },
         timestamp: Date.now(),
         decisionTime: 0,
       });

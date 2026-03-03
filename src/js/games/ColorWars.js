@@ -160,6 +160,13 @@ export class ColorWars {
   }
 
   _placeFirstMove(row, col) {
+    const existing = this.grid[row][col];
+    if (existing && existing.owner !== null) {
+      this._setStatus("Cell already taken! Pick another.");
+      setTimeout(() => this._setStatus(""), 700);
+      return;
+    }
+
     this.grid[row][col] = {
       owner: this.currentPlayer,
       dots: 3,
@@ -178,7 +185,6 @@ export class ColorWars {
     });
 
     this._switchPlayer();
-    this._updateGridDisplay();
   }
 
   _placeDot(row, col) {
@@ -198,15 +204,15 @@ export class ColorWars {
     });
     if (cell.dots >= 4) {
       this._expanding = true;
-      this._expandTerritory(row, col);
       cell.dots = 1;
-      // Delay win check and turn switch until chain reactions finish
+      // Schedule callback BEFORE starting expansion so leaf-case doesn't miss it
       this._scheduleAfterExpansion(() => {
         this._expanding = false;
         this._updateDisplay();
         this._checkWinCondition();
-        this._switchPlayer();
+        if (!this.gameEnded) this._switchPlayer();
       });
+      this._expandTerritory(row, col);
     } else {
       this._updateDisplay();
       this._checkWinCondition();
