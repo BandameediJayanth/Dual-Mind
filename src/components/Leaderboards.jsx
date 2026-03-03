@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../js/data/supabase';
 import './Leaderboards.css';
-
-// Initialize Supabase fallback safely
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 // --- Codename Generator ---
 const adjectives = ['Quantum', 'Neon', 'Cyber', 'Silver', 'Golden', 'Electric', 'Shadow', 'Crimson', 'Astral', 'Nexus', 'Frozen', 'Blazing', 'Silent', 'Lunar', 'Solar', 'Cosmic', 'Hyper'];

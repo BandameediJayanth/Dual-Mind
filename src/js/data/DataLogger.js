@@ -1,20 +1,12 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from './supabase';
 
 export class DataLogger {
   constructor() {
-    this.supabase = null;
+    this.supabase = supabase;
     this.playerId = this.getOrCreatePlayerId();
     
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-    if (supabaseUrl && supabaseKey && supabaseKey !== 'paste_your_anon_key_here') {
-      try {
-        this.supabase = createClient(supabaseUrl, supabaseKey);
-        console.log("Supabase DataLogger initialized.");
-      } catch (err) {
-        console.warn("Failed to initialize Supabase client:", err);
-      }
+    if (this.supabase) {
+      console.log("Supabase DataLogger initialized.");
     } else {
       console.warn("Supabase credentials missing. Data logging disabled.");
     }
