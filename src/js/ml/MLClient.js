@@ -74,32 +74,44 @@ export class MLClient {
       return false;
     }
 
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for cold starts
+    // Retry logic for Render cold starts (free tier sleeps after 15min, takes 30-60s to wake)
+    const timeouts = [8000, 15000, 30000]; // 3 attempts with increasing timeouts
+    
+    for (let attempt = 0; attempt < timeouts.length; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeouts[attempt]);
 
-      const response = await fetch(`${this.apiEndpoint}/health`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-      });
+        const response = await fetch(`${this.apiEndpoint}/health`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+        });
 
-      clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-      if (response.ok) {
-        const data = await response.json();
-        this.pythonServiceAvailable = data.status === "ok";
-        this.modelStatus = data.models || {};
-        return true;
+        if (response.ok) {
+          const data = await response.json();
+          this.pythonServiceAvailable = data.status === "ok";
+          this.modelStatus = data.models || {};
+          console.log(`🤖 ML backend connected on attempt ${attempt + 1}`);
+          return true;
+        }
+        // Non-ok response (404 etc.) — Python service not deployed
+        this.pythonServiceAvailable = false;
+        return false;
+      } catch (error) {
+        // Timeout or network error — retry if attempts remain
+        if (attempt < timeouts.length - 1) {
+          console.log(`🤖 ML backend waking up... retry ${attempt + 2}/${timeouts.length}`);
+        }
       }
-      // Non-ok response (404 etc.) — Python service not deployed
-      this.pythonServiceAvailable = false;
-      return false;
-    } catch (error) {
-      // Network error or timeout — silently fall back
-      this.pythonServiceAvailable = false;
-      return false;
     }
+
+    // All retries exhausted — fall back to rule-based
+    console.warn("🤖 ML backend unreachable after retries — using fallback");
+    this.pythonServiceAvailable = false;
+    return false;
   }
 
   /**
