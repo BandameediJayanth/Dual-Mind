@@ -328,30 +328,38 @@ async def predict_skill(request: SkillPredictRequest):
     Predict skill tier (Novice → Expert) from gameplay features.
     Uses trained RandomForest/XGBoost model with LRU cache.
     """
-    features = normalize_feature_keys(request.features)
-    
-    # Cache-Aside pattern: check cache first
-    cache_key = f"skill:{hash_features(features)}"
-    cached = cache.get(cache_key)
-    if cached:
-        cached['cache_hit'] = True
-        return {"prediction": cached}
-    
-    # Model inference
-    if models.skill_predictor and models.skill_predictor.is_trained:
-        result = models.skill_predictor.predict(features)
-        result['model_type'] = models.skill_predictor.model_type
-    else:
-        result = _fallback_skill_prediction(features)
-        result['model_type'] = 'fallback'
-    
-    result['cache_hit'] = False
-    models.prediction_count += 1
-    
-    # Store in cache
-    cache.set(cache_key, result)
-    
-    return {"prediction": result}
+    try:
+        features = normalize_feature_keys(request.features)
+        
+        # Cache-Aside pattern: check cache first
+        cache_key = f"skill:{hash_features(features)}"
+        cached = cache.get(cache_key)
+        if cached:
+            cached['cache_hit'] = True
+            return {"prediction": cached}
+        
+        # Model inference
+        if models.skill_predictor and models.skill_predictor.is_trained:
+            result = models.skill_predictor.predict(features)
+            result['model_type'] = models.skill_predictor.model_type
+        else:
+            result = _fallback_skill_prediction(features)
+            result['model_type'] = 'fallback'
+        
+        result['cache_hit'] = False
+        models.prediction_count += 1
+        
+        # Store in cache
+        cache.set(cache_key, result)
+        
+        return {"prediction": result}
+    except Exception as e:
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=200,
+            content={"prediction": _fallback_skill_prediction(normalize_feature_keys(request.features)),
+                      "error": str(e), "fallback": True}
+        )
 
 
 @app.post("/api/ml/predict/performance")
@@ -359,26 +367,34 @@ async def predict_performance(request: PerformancePredictRequest):
     """
     Estimate performance index (0-100) from gameplay features.
     """
-    features = normalize_feature_keys(request.features)
-    
-    cache_key = f"perf:{hash_features(features)}"
-    cached = cache.get(cache_key)
-    if cached:
-        cached['cache_hit'] = True
-        return {"prediction": cached}
-    
-    if models.performance_estimator and models.performance_estimator.is_trained:
-        result = models.performance_estimator.predict(features)
-        result['model_type'] = models.performance_estimator.model_type
-    else:
-        result = _fallback_performance_estimation(features)
-        result['model_type'] = 'fallback'
-    
-    result['cache_hit'] = False
-    models.prediction_count += 1
-    cache.set(cache_key, result)
-    
-    return {"prediction": result}
+    try:
+        features = normalize_feature_keys(request.features)
+        
+        cache_key = f"perf:{hash_features(features)}"
+        cached = cache.get(cache_key)
+        if cached:
+            cached['cache_hit'] = True
+            return {"prediction": cached}
+        
+        if models.performance_estimator and models.performance_estimator.is_trained:
+            result = models.performance_estimator.predict(features)
+            result['model_type'] = models.performance_estimator.model_type
+        else:
+            result = _fallback_performance_estimation(features)
+            result['model_type'] = 'fallback'
+        
+        result['cache_hit'] = False
+        models.prediction_count += 1
+        cache.set(cache_key, result)
+        
+        return {"prediction": result}
+    except Exception as e:
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=200,
+            content={"prediction": _fallback_performance_estimation(normalize_feature_keys(request.features)),
+                      "error": str(e), "fallback": True}
+        )
 
 
 @app.post("/api/ml/analyze/trends")
