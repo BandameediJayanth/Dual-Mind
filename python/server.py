@@ -120,6 +120,17 @@ def hash_features(features: dict) -> str:
     s = json.dumps(features, sort_keys=True, default=str)
     return hashlib.md5(s.encode()).hexdigest()
 
+import re
+
+def camel_to_snake(name: str) -> str:
+    """Convert camelCase to snake_case (e.g. avgDecisionTime -> avg_decision_time)."""
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+def normalize_feature_keys(features: dict) -> dict:
+    """Convert all camelCase feature keys to snake_case for the Python models."""
+    return {camel_to_snake(k): v for k, v in features.items()}
+
 # ═══════════════════════════════════════════════════
 # Rate Limiter (Token Bucket)
 # ═══════════════════════════════════════════════════
@@ -317,7 +328,7 @@ async def predict_skill(request: SkillPredictRequest):
     Predict skill tier (Novice → Expert) from gameplay features.
     Uses trained RandomForest/XGBoost model with LRU cache.
     """
-    features = request.features
+    features = normalize_feature_keys(request.features)
     
     # Cache-Aside pattern: check cache first
     cache_key = f"skill:{hash_features(features)}"
@@ -348,7 +359,7 @@ async def predict_performance(request: PerformancePredictRequest):
     """
     Estimate performance index (0-100) from gameplay features.
     """
-    features = request.features
+    features = normalize_feature_keys(request.features)
     
     cache_key = f"perf:{hash_features(features)}"
     cached = cache.get(cache_key)
