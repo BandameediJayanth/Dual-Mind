@@ -1,9 +1,9 @@
 # Python ML Dependencies for DualMind
 # Install with: pip install -r requirements.txt
 
-# Core ML Libraries
-numpy>=1.21.0
-scikit-learn>=1.0.0
+# Core ML Libraries — pinned to match trained model versions
+numpy>=1.21.0,<2.0.0
+scikit-learn==1.3.0
 
 # Optional: XGBoost
 xgboost>=1.5.0
