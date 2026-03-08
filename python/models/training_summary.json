@@ -1,13 +1,23 @@
 {
-  "training_date": "2026-03-03T23:44:48.656467",
+  "training_date": "2026-03-06T20:57:58.627752",
   "model_type": "random_forest",
-  "n_samples": 2000,
+  "n_samples": 1000,
+  "data_source": "data_acquisition/training_data/all_games_combined.csv",
   "skill_predictor": {
-    "test_accuracy": 0.98,
-    "cv_score": 0.9824999999999999
+    "test_accuracy": 0.895,
+    "cv_score": 0.8560000000000001,
+    "cv_std": 0.026343879744639004
   },
   "performance_estimator": {
-    "test_r2": 0.8895687214173622,
-    "test_rmse": 7.319500174891816
+    "test_r2": 0.8815917127213897,
+    "test_rmse": 4.095645482288872,
+    "test_mae": 3.2199302362652986
+  },
+  "tier_distribution": {
+    "2": 471,
+    "3": 187,
+    "1": 279,
+    "4": 22,
+    "0": 41
   }
 }

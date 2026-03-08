@@ -62,20 +62,21 @@ export class MLClient {
    * Check if Python ML service is available
    */
   async checkPythonService() {
-    // In production (no Vite proxy), the /api/ml path doesn't exist.
-    // Skip the fetch entirely to avoid a browser-level 404 console error.
-    if (
-      typeof import.meta !== "undefined" &&
-      import.meta.env &&
-      import.meta.env.PROD
-    ) {
+    // Use VITE_ML_API_URL if provided (e.g., Render/Railway deployment)
+    if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_ML_API_URL) {
+      // Ensure the remote endpoint still points to the /api/ml prefix routes
+      const baseUrl = import.meta.env.VITE_ML_API_URL.replace(/\/$/, ""); 
+      this.apiEndpoint = baseUrl.endsWith("/api/ml") ? baseUrl : `${baseUrl}/api/ml`;
+    } else if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.PROD) {
+      // In production without a remote URL, the local proxy path doesn't exist.
+      // Skip the fetch entirely to avoid a browser-level 404 console error.
       this.pythonServiceAvailable = false;
       return false;
     }
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for cold starts
 
       const response = await fetch(`${this.apiEndpoint}/health`, {
         method: "GET",

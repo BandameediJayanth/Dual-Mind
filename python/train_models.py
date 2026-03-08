@@ -1,20 +1,94 @@
 """
 Training Script - Train ML models for the Game Suite
 Generates synthetic training data and trains Random Forest / XGBoost models
+
+Supports:
+- Synthetic data generation (default)
+- Loading from CSV files (--data-file option)
 """
 
 import os
 import sys
 import json
 import argparse
+import csv
+import random
 import numpy as np
 from datetime import datetime
+from pathlib import Path
+from typing import Optional, Tuple, List, Dict
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from ml.skill_predictor import SkillPredictor
 from ml.performance_estimator import PerformanceEstimator
+
+
+# Feature columns expected in CSV
+FEATURE_COLUMNS = [
+    'avg_decision_time', 'decision_time_variance', 'move_accuracy', 'error_rate',
+    'pattern_success_rate', 'consistency_score', 'optimal_play_rate',
+    'strategic_move_rate', 'strategic_depth', 'memory_accuracy',
+    'logical_reasoning', 'improvement_rate', 'win_rate'
+]
+
+
+def load_data_from_csv(csv_path: str, max_samples: Optional[int] = None, 
+                       shuffle: bool = True, seed: int = 42) -> Tuple[List, List, List]:
+    """
+    Load training data from CSV file.
+    
+    Expected columns:
+    - Feature columns (see FEATURE_COLUMNS)
+    - skill_tier: integer 0-4
+    - performance_score: float 0-100
+    
+    Args:
+        csv_path: Path to CSV file
+        max_samples: Maximum samples to load (None = all)
+        shuffle: Whether to shuffle data (important for balanced sampling)
+        seed: Random seed for reproducibility
+    """
+    print(f"   Loading data from: {csv_path}")
+    
+    all_data = []
+    
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        
+        for row in reader:
+            # Extract features
+            features = {}
+            for col in FEATURE_COLUMNS:
+                if col in row:
+                    try:
+                        features[col] = float(row[col])
+                    except ValueError:
+                        features[col] = 0.0
+            
+            # Extract labels
+            skill_tier = int(row.get('skill_tier', 2))
+            perf_score = float(row.get('performance_score', 50.0))
+            
+            all_data.append((features, skill_tier, perf_score))
+    
+    # Shuffle for balanced class distribution when sampling
+    if shuffle:
+        random.seed(seed)
+        random.shuffle(all_data)
+    
+    # Limit samples if needed
+    if max_samples and len(all_data) > max_samples:
+        all_data = all_data[:max_samples]
+    
+    # Unpack into separate lists
+    training_data = [d[0] for d in all_data]
+    skill_labels = [d[1] for d in all_data]
+    performance_scores = [d[2] for d in all_data]
+    
+    print(f"   Loaded {len(training_data)} samples from CSV (shuffled={shuffle})")
+    return training_data, skill_labels, performance_scores
 
 
 def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> tuple:
@@ -132,24 +206,50 @@ def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> tuple:
 
 
 def train_models(output_dir: str, model_type: str = 'random_forest',
-                 n_samples: int = 1000):
-    """Train and save ML models."""
+                 n_samples: Optional[int] = 1000, data_file: Optional[str] = None):
+    """
+    Train and save ML models.
+    
+    Uses stratified 80/20 train/test split with 5-fold cross-validation.
+    This approach is standard for IEEE publications.
+    """
     
     print(f"\n{'='*60}")
     print(f"Training ML Models for Game Suite")
     print(f"{'='*60}")
     print(f"Model type: {model_type}")
-    print(f"Training samples: {n_samples}")
+    if data_file:
+        print(f"Data source: {data_file}")
+    else:
+        print(f"Training samples: {n_samples} (synthetic)")
     print(f"Output directory: {output_dir}")
+    print(f"Split: 80% train / 20% test + 5-fold CV")
     print(f"{'='*60}\n")
     
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
     
-    # Generate training data
-    print("📊 Generating synthetic training data...")
-    training_data, skill_labels, performance_scores = generate_synthetic_data(n_samples)
-    print(f"   Generated {len(training_data)} samples")
+    # Load or generate training data
+    if data_file:
+        print("📊 Loading training data from CSV...")
+        training_data, skill_labels, performance_scores = load_data_from_csv(data_file, n_samples)
+    else:
+        print("📊 Generating synthetic training data...")
+        # Default to 1000 samples if not specified for synthetic data
+        sample_count = n_samples if n_samples is not None else 1000
+        training_data, skill_labels, performance_scores = generate_synthetic_data(sample_count)
+    
+    print(f"   Total samples: {len(training_data)}")
+    
+    # Print class distribution
+    tier_counts = {}
+    for tier in skill_labels:
+        tier_counts[tier] = tier_counts.get(tier, 0) + 1
+    tier_names = ['Novice', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
+    print("   Skill tier distribution:")
+    for tier in sorted(tier_counts.keys()):
+        pct = tier_counts[tier] / len(skill_labels) * 100
+        print(f"     {tier_names[tier]}: {tier_counts[tier]} ({pct:.1f}%)")
     
     # Train skill predictor
     print("\n🎯 Training Skill Predictor...")
@@ -203,15 +303,19 @@ def train_models(output_dir: str, model_type: str = 'random_forest',
     summary = {
         'training_date': datetime.now().isoformat(),
         'model_type': model_type,
-        'n_samples': n_samples,
+        'n_samples': len(training_data),
+        'data_source': data_file if data_file else 'synthetic',
         'skill_predictor': {
             'test_accuracy': skill_results['test_accuracy'],
-            'cv_score': skill_results['cv_mean']
+            'cv_score': skill_results['cv_mean'],
+            'cv_std': skill_results['cv_std']
         },
         'performance_estimator': {
             'test_r2': perf_results['test_r2'],
-            'test_rmse': perf_results['test_rmse']
-        }
+            'test_rmse': perf_results['test_rmse'],
+            'test_mae': perf_results['test_mae']
+        },
+        'tier_distribution': tier_counts
     }
     
     summary_path = os.path.join(output_dir, 'training_summary.json')
@@ -247,8 +351,14 @@ def main():
     parser.add_argument(
         '--samples', '-n',
         type=int,
-        default=1000,
-        help='Number of training samples to generate'
+        default=None,
+        help='Maximum number of training samples (default: all available)'
+    )
+    parser.add_argument(
+        '--data-file', '-d',
+        type=str,
+        default=None,
+        help='Path to CSV file with training data (if not provided, uses synthetic data)'
     )
     
     args = parser.parse_args()
@@ -259,7 +369,12 @@ def main():
         args.output
     )
     
-    train_models(output_dir, args.model_type, args.samples)
+    # Default samples if not specified
+    n_samples = args.samples
+    if n_samples is None and args.data_file is None:
+        n_samples = 1000  # Default for synthetic
+    
+    train_models(output_dir, args.model_type, n_samples, args.data_file)
 
 
 if __name__ == '__main__':
