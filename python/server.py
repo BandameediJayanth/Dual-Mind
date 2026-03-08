@@ -238,13 +238,14 @@ app = FastAPI(
 
 # --- Middleware ---
 
-# CORS: allow frontend to call the API
+# CORS: allow frontend to call the API from any origin
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],       # In production: restrict to your domain
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["X-Response-Time", "X-RateLimit-Remaining"],
 )
 
 # Gzip: compress responses > 500 bytes
