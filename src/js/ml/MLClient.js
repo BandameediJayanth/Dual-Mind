@@ -22,8 +22,8 @@ export class MLClient {
     // Python ML API endpoint — uses Vite proxy in dev, direct URL in production
     this.apiEndpoint = "/api/ml";
 
-    // Request timeout
-    this.requestTimeout = 5000;
+    // Request timeout (15s to handle Render free-tier cold responses)
+    this.requestTimeout = 15000;
 
     // Skill tiers (must match Python model output)
     this.skillTiers = [
