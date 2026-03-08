@@ -62,16 +62,17 @@ export class MLClient {
    * Check if Python ML service is available
    */
   async checkPythonService() {
-    // Use VITE_ML_API_URL if provided (e.g., Render/Railway deployment)
-    if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_ML_API_URL) {
-      // Ensure the remote endpoint still points to the /api/ml prefix routes
-      const baseUrl = import.meta.env.VITE_ML_API_URL.replace(/\/$/, ""); 
+    // Use VITE_ML_API_URL if provided, otherwise use hardcoded Render URL in production
+    const remoteUrl = (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_ML_API_URL)
+      ? import.meta.env.VITE_ML_API_URL
+      : null;
+
+    if (remoteUrl) {
+      const baseUrl = remoteUrl.replace(/\/$/, ""); 
       this.apiEndpoint = baseUrl.endsWith("/api/ml") ? baseUrl : `${baseUrl}/api/ml`;
     } else if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.PROD) {
-      // In production without a remote URL, the local proxy path doesn't exist.
-      // Skip the fetch entirely to avoid a browser-level 404 console error.
-      this.pythonServiceAvailable = false;
-      return false;
+      // Production fallback: use the known Render deployment URL
+      this.apiEndpoint = "https://dual-mind.onrender.com/api/ml";
     }
 
     // Retry logic for Render cold starts (free tier sleeps after 15min, takes 30-60s to wake)
