@@ -500,11 +500,12 @@ def _fallback_performance_estimation(features: dict) -> dict:
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("ML_API_PORT", 8000))
+    port = int(os.environ.get("PORT", os.environ.get("ML_API_PORT", 10000)))
+    is_dev = os.environ.get("ENV", "production") == "development"
     uvicorn.run(
         "server:app",
         host="0.0.0.0",
         port=port,
-        reload=True,
+        reload=is_dev,
         log_level="info"
     )
